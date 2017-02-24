@@ -34,6 +34,7 @@ class Context(object):
         self.exchange = None
         self.interactiv = None
 
+
 pass_context = click.make_pass_decorator(Context, ensure=True)
 
 
@@ -76,6 +77,7 @@ def start(ctx, market, interval, position, resolution, timeframe):
         strategy = InteractivStrategyWrapper(strategy)
     bot = Cointrader(market, strategy, resolution, timeframe)
     bot.start(interval)
+
 
 main.add_command(start)
 

@@ -10,9 +10,9 @@ BUY = 1
 SELL = -1
 WAIT = 0
 signal_map = {
-        BUY: "BUY",
-        WAIT: "WAIT",
-        SELL: "SELL"
+    BUY: "BUY",
+    WAIT: "WAIT",
+    SELL: "SELL"
 }
 # Signals for strategies.
 

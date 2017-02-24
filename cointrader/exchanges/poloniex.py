@@ -25,7 +25,6 @@ class Api(object):
         self.key = api[0]
         self.secret = api[1]
 
-
     def ticker(self, currency=None):
         raise NotImplementedError()
 
@@ -150,7 +149,7 @@ class Poloniex(Api):
         """
         end = datetime.datetime.now()
         if timeframe is None:
-            start = end - datetime.timedelta(seconds=3600*24)
+            start = end - datetime.timedelta(seconds=3600 * 24)
         else:
             start = end - datetime.timedelta(seconds=timeframe)
 
@@ -175,7 +174,7 @@ class Poloniex(Api):
 
         """
         result = {}
-        params = {"command": "returnCompleteBalances", "nonce": int(time.time()*1000)}
+        params = {"command": "returnCompleteBalances", "nonce": int(time.time() * 1000)}
         sign = hmac.new(str(self.secret), urllib.urlencode(params), hashlib.sha512).hexdigest()
         headers = {"Key": self.key, "Sign": sign}
         r = requests.post("https://poloniex.com/tradingApi", data=params, headers=headers)
