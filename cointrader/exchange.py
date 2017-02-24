@@ -3,9 +3,9 @@
 from .exchanges.poloniex import Poloniex as PoloniexApi
 from .chart import Chart
 
-RESOLUTIONS = {"5m": 5*60, "15m": 15*60, "30m": 30*60, "2h": 60*60*2, "12h": 60*60*12}
-TIMEFRAME = {"5m": 5*60, "15m": 15*60, "30m": 30*60, "1h": 60*60, "2h": 60*60*2,
-             "6h": 60*60*6, "12h": 60*60*12, "1d": 60*60*24, "2d": 60*60*24*2, "1w": 60*60*24*7}
+RESOLUTIONS = {"5m": 5 * 60, "15m": 15 * 60, "30m": 30 * 60, "2h": 60 * 60 * 2, "12h": 60 * 60 * 12}
+TIMEFRAME = {"5m": 5 * 60, "15m": 15 * 60, "30m": 30 * 60, "1h": 60 * 60, "2h": 60 * 60 * 2,
+             "6h": 60 * 60 * 6, "12h": 60 * 60 * 12, "1d": 60 * 60 * 24, "2d": 60 * 60 * 24 * 2, "1w": 60 * 60 * 24 * 7}
 CASH = {"0.01$": 0.01, "0.1$": 0.1, "1$": 1, "2$": 2, "5$": 5, "10$": 10, "25$": 25, "50$": 25}
 
 
@@ -74,7 +74,7 @@ class Poloniex(Exchange):
     def btc2dollar(self, amount):
         ticker = self._api.ticker("USDT_BTC")
         rate = float(ticker["last"])
-        return round(amount*rate, 2)
+        return round(amount * rate, 2)
 
     def get_balance(self, currency):
         return self._api.balance()[currency]
