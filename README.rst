@@ -18,8 +18,7 @@ Cointrader
      :alt: Updates
 
 
-Cointrader is a trading application for crypto currencies.
-
+Cointrader is a CLI trading bot for crypto currencies on the Poloniex_ exchange.
 
 * Free software: MIT license
 * Documentation: https://cointrader.readthedocs.io.
@@ -30,11 +29,13 @@ Features
 
 * TODO
 
+
 Credits
 ---------
 
 This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
 
+.. _Poloniex: https://poloniex.com
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
 
