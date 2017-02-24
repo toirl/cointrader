@@ -7,15 +7,6 @@ from .strategy import BUY, SELL, WAIT
 
 log = logging.getLogger(__name__)
 
-def get_trader(exchange, market):
-    """TODO: Docstring for get_trader.
-
-    :arg1: TODO
-    :returns: TODO
-
-    """
-    pass
-
 
 class Cointrader(Base):
     """Docstring for Cointrader. """
