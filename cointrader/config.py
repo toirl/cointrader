@@ -1,23 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import json
+import logging
+import logging.config
+import ConfigParser
 
 
 class Config(object):
 
-    def __init__(self, config=None):
+    def __init__(self, configfile=None):
 
         self.verbose = False
         self.market = "poloniex"
         self.api_key = None
         self.api_secret = None
 
-        if config:
-            values = json.load(config)
-            for key in values:
-                if key == "api":
-                    self.api_key = values[key]["key"]
-                    self.api_secret = values[key]["secret"]
+        if configfile:
+            logging.config.fileConfig(configfile.name)
+            config = ConfigParser.ConfigParser()
+            config.readfp(configfile)
+            exchange = config.get("DEFAULT", "exchange")
+            self.api_key = config.get(exchange, "api_key")
+            self.api_secret = config.get(exchange, "api_secret")
 
     @property
     def api(self):
