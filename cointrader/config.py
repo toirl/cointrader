@@ -1,8 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import os
 import logging
 import logging.config
 import ConfigParser
+
+DEFAULT_CONFIG = ".cointrader.ini"
+
+
+def get_path_to_config():
+    env = os.getenv("HOME")
+    return os.path.join(env, DEFAULT_CONFIG)
 
 
 class Config(object):
