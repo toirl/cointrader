@@ -1,7 +1,51 @@
 =============
 Configuration
 =============
-TODO
+Contraider uses a configuration file to set some important settings like the
+key and the secret for the API on the configured exchange. A configuration
+looks like this and must be located in your `$HOME` directory with the filename
+`.cointrader.ini`. Please make sure you have created a configuration file.::
+
+        [DEFAULT]
+        # Set default exchange which will be used for trading.
+        # Currently onyl Poloniex is supported!
+        exchange = poloniex
+
+        [poloniex]
+        # See https://poloniex.com/apiKeys for more details.
+        api_key = YOUR-API-KEY-HERE
+        api_secret = YOUR-API-SECRET-HERE
+
+        #
+        ## Default logging configuration of the application.
+        #
+        [loggers]
+        keys = root, cointrader
+
+        [handlers]
+        keys = console
+
+        [formatters]
+        keys = generic
+
+        [logger_root]
+        level = ERROR
+        handlers = console
+
+        [logger_cointrader]
+        level = INFO
+        handlers =
+        qualname = cointrader
+
+        [handler_console]
+        class = StreamHandler
+        args = (sys.stderr,)
+        level = NOTSET
+        formatter = generic
+
+        [formatter_generic]
+        format = %(asctime)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s
+
 
 =====
 Usage
