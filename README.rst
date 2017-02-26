@@ -39,8 +39,10 @@ Planned
 -------
 
 * Risk- and Money management
-  * Stop loss limits
-  * Take profit limits
+ 
+ * Stop loss limits
+ * Take profit limits
+
 * Trade logbook, Profit/Loss analysis
 * Full automatic trading
 * Pluggable external trading strategies
