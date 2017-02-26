@@ -125,7 +125,6 @@ class Exchange(object):
         return sorted(markets.items(),
                       key=lambda x: (float(x[1]["volume"]), float(x[1]["change"])), reverse=True)[0:limit]
 
-
     def get_market(self, market):
         raise NotImplementedError
 
