@@ -53,33 +53,9 @@ Usage
 The cointrader application is CLI application and provides some basic commands
 which are hopefully usefull for your daily trading activity.
 
-Getting help
-------------
 To get general help to the application please use the help flag::
 
         cointrader --help
-
-Show current balance
---------------------
-Cointrader can show yoyur current balance at the configured exchange by
-invoking the balance command::
-
-        contrader balance
-
-Explore markets
----------------
-Cointrader can explore the different markets on the given exchange and will
-result the most interesting markets to trade on for the last 24H.
-
-A market is considered interesting if it has a high trading volume and it has
-a large positive change in its rate. Only markets which are in the TOP 5 in
-both categories are listed on default.::
-
-        contrader explore
-
-General help to the application can be always shown be invoking cointrader
-cointrader command.
-G
 
 Trading
 -------
@@ -109,3 +85,32 @@ If you want to start your trading session in a automatic session you can set
 the `--automatic` flag. Cointrader will then automatically take action on the
 emitted trading signals. In automatic mode the resolution will determine
 between two trading actions.
+
+Balance
+-------
+Cointrader can show yoyur current balance at the configured exchange by
+invoking the balance command::
+
+        contrader balance
+
+Explore
+-------
+Cointrader can explore the different markets on the given exchange and will
+result the most interesting markets to trade on for the last 24H::
+
+        contrader explore
+
+On default cointrader will look for the top three volume and profit markets and
+only lists those markets which are in the top three in both categories. The command
+will give you an output like this::
+
+        BTC_DASH     4.47%     2190.7 https://poloniex.com/exchange#btc_dash
+        BTC_ETH      3.21%     5138.0 https://poloniex.com/exchange#btc_eth
+
+If the command gives no output means that there are no markets in the top three
+which met bot critera. In this sitution you can either use the `--top`
+attribute to increase the amount of markets which are consired as interesting.
+
+Alternatively you can use the `--order-by-volume` and `--order-by-profit` flag
+to only look on profit or volume markets.
+
