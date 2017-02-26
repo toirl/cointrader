@@ -77,14 +77,35 @@ both categories are listed on default.::
 
         contrader explore
 
-General help to the application can be always shown be invoking contrainder
+General help to the application can be always shown be invoking cointrader
 cointrader command.
 G
 
 Trading
 -------
-Contraider can start its trading activity by using the following command::
+Cointrader can start its trading activity by using the following command::
 
         contrader start BTC_DASH
 
-This will start the cointrader bot in interactive mode.
+Cointrader expects a valid currency pair as argument to the start command.
+Please not that the naming of the currency pair is depended on the configured
+exchange.
+
+Without any further arguments cointrader will start an interactive trading
+session. Cointrader will emit trading signals (BUY, WAIT, SELL) and waits for
+your decision what to do.
+
+The trading signals are based on a technical
+analysis with the default trading strategy on a candlestick chart of the last
+24H in a 30 minutes resolution.
+
+The time frame can be changed by using the `--timeframe` option. See `--help`
+for more information.
+
+The resolution can be changed by using the `--resolution` option. See `--help`
+for more information.
+
+If you want to start your trading session in a automatic session you can set
+the `--automatic` flag. Cointrader will then automatically take action on the
+emitted trading signals. In automatic mode the resolution will determine
+between two trading actions.
