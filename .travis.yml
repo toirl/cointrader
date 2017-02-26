@@ -1,5 +1,4 @@
-# Config file for automatic testing at travis-ci.org
-# This file will be regenerated if you run travis_pypi_setup.py
+# Config file for automatic testing at travis-ci.org # This file will be regenerated if you run travis_pypi_setup.py
 
 language: python
 python: 3.5
@@ -9,9 +8,9 @@ env:
   - TOXENV=py27
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: 
-        pip install sqlalchemy
-        pip install -U tox
+install:
+  - pip install -e .
+  - pip install -U tox
 
 # command to run tests, e.g. python setup.py test
 script: tox -e ${TOXENV}
