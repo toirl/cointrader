@@ -9,6 +9,10 @@ TIMEFRAME = {"5m": 5 * 60, "15m": 15 * 60, "30m": 30 * 60, "1h": 60 * 60, "2h": 
 CASH = {"0.01$": 0.01, "0.1$": 0.1, "1$": 1, "2$": 2, "5$": 5, "10$": 10, "25$": 25, "50$": 25}
 
 
+def get_market_name(market):
+    return market[0]
+
+
 class Market(object):
 
     """Docstring for Market. """
@@ -50,6 +54,45 @@ class Exchange(object):
     @property
     def url(self):
         raise NotImplementedError
+
+    @property
+    def markets(self):
+        ticker = self._api.ticker()
+        tmp = {}
+        for currency in ticker:
+            if currency.startswith("BTC_"):
+                change = round(float(ticker[currency]["percentChange"]) * 100, 2)
+                volume = round(float(ticker[currency]["baseVolume"]), 1)
+                if change <= 0:
+                    continue
+                tmp[currency] = {"volume": volume, "change": change}
+        return tmp
+
+    def get_top_markets(self, markets, limit=10):
+        if not markets:
+            markets = self.markets
+        top_profit = self.get_top_profit_markets(markets, limit)
+        top_volume = self.get_top_volume_markets(markets, limit)
+        top_profit_markets = set(map(get_market_name, top_profit))
+        top_volume_markets = set(map(get_market_name, top_volume))
+
+        top_markets = {}
+        for market in top_profit_markets.intersection(top_volume_markets):
+            top_markets[market] = markets[market]
+        return sorted(top_markets.items(), key=lambda x: x[1]["change"], reverse=True)[0:limit]
+
+    def get_top_profit_markets(self, markets=None, limit=10):
+        if not markets:
+            markets = self.markets
+        return sorted(markets.items(),
+                      key=lambda x: (float(x[1]["change"]), float(x[1]["volume"])), reverse=True)[0:limit]
+
+    def get_top_volume_markets(self, markets=None, limit=10):
+        if not markets:
+            markets = self.markets
+        return sorted(markets.items(),
+                      key=lambda x: (float(x[1]["volume"]), float(x[1]["change"])), reverse=True)[0:limit]
+
 
     def get_market(self, market):
         raise NotImplementedError

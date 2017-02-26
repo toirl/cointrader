@@ -34,6 +34,31 @@ def main(ctx, config):
 
 
 @click.command()
+@click.option("--order-by-volume", help="Order markets by their trading volume", is_flag=True)
+@click.option("--order-by-profit", help="Order markets by their current profit", is_flag=True)
+@click.option("--limit", help="Limit output to NUM markets", default=3)
+@pass_context
+def explore(ctx, order_by_volume, order_by_profit, limit):
+    """List top markets. On default list markets which are profitable and has a high volume."""
+    markets = ctx.exchange.markets
+    if not order_by_volume and not order_by_profit:
+        markets = ctx.exchange.get_top_markets(markets, limit)
+        for market in markets:
+            url = "https://poloniex.com/exchange#{}".format(market[0].lower())
+            click.echo("{:<10} {:>6}% {:>10} {:>20}".format(market[0], market[1]["change"], market[1]["volume"], url))
+    elif order_by_volume:
+        markets = ctx.exchange.get_top_volume_markets(markets, limit)
+        for market in markets:
+            url = "https://poloniex.com/exchange#{}".format(market[0].lower())
+            click.echo("{:<10} {:>10} {:>6}% {:>20}".format(market[0], market[1]["volume"], market[1]["change"], url))
+    elif order_by_profit:
+        markets = ctx.exchange.get_top_profit_markets(markets, limit)
+        for market in markets:
+            url = "https://poloniex.com/exchange#{}".format(market[0].lower())
+            click.echo("{:<10} {:>6}% {:>10} {:>20}".format(market[0], market[1]["change"], market[1]["volume"], url))
+
+
+@click.command()
 @click.argument("market")
 @click.option("--resolution", help="Resolution of the chart which is used for trend analysis", default="30m")
 @click.option("--timeframe", help="Timeframe of the chart which is used for trend analysis", default="1d")
@@ -60,6 +85,7 @@ def start(ctx, market, resolution, timeframe, automatic):
     bot.start(interval)
 
 
+main.add_command(explore)
 main.add_command(start)
 
 if __name__ == "__main__":
