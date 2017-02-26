@@ -88,10 +88,21 @@ between two trading actions.
 
 Balance
 -------
-Cointrader can show yoyur current balance at the configured exchange by
+Cointrader can show your current balance at the configured exchange by
 invoking the balance command::
 
         contrader balance
+
+This will give you an output like this::
+
+        CUR          total    btc_value
+        -------------------------------
+        DASH:  14.34446293   0.34583237
+        BTC :   0.04910656   0.04910656
+        -------------------------------
+        TOTAL BTC:           0.39493893
+        TOTAL USD:        465.392085719
+
 
 Explore
 -------

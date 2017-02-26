@@ -59,6 +59,20 @@ def explore(ctx, order_by_volume, order_by_profit, limit):
 
 
 @click.command()
+@pass_context
+def balance(ctx):
+    """Overview of your balances on the market."""
+    click.echo("{:<4}  {:>12} {:>12}".format("CUR", "total", "btc_value"))
+    click.echo("{}".format("-" * 31))
+    coins = ctx.exchange.coins
+    for currency in coins:
+        click.echo("{:<4}: {:>12} {:>12}".format(currency, coins[currency].quantity, coins[currency].value))
+    click.echo("{}".format("-" * 31))
+    click.echo("{:<9}: {:>20}".format("TOTAL BTC", ctx.exchange.total_btc_value))
+    click.echo("{:<9}: {:>20}".format("TOTAL USD", ctx.exchange.total_euro_value))
+
+
+@click.command()
 @click.argument("market")
 @click.option("--resolution", help="Resolution of the chart which is used for trend analysis", default="30m")
 @click.option("--timeframe", help="Timeframe of the chart which is used for trend analysis", default="1d")
@@ -86,6 +100,7 @@ def start(ctx, market, resolution, timeframe, automatic):
 
 
 main.add_command(explore)
+main.add_command(balance)
 main.add_command(start)
 
 if __name__ == "__main__":

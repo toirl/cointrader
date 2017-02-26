@@ -13,6 +13,20 @@ def get_market_name(market):
     return market[0]
 
 
+class Coin(object):
+
+    """Docstring for Coin."""
+
+    def __init__(self, name, quantity, btc_value=None):
+        self.name = name
+        self.quantity = quantity
+        self.btc_value = btc_value
+
+    @property
+    def value(self):
+        return self.btc_value
+
+
 class Market(object):
 
     """Docstring for Market. """
@@ -47,13 +61,31 @@ class Exchange(object):
 
     """Baseclass for all exchanges"""
 
-    def __init__(self, config):
+    def __init__(self, config, api=None):
         """TODO: to be defined1. """
-        self._api = None
+        self._api = api
+        self.coins = {}
+
+        # Setup coins
+        balance = self._api.balance()
+        for currency in balance:
+            if balance[currency]["quantity"] > 0:
+                self.coins[currency] = Coin(currency,
+                                            balance[currency]["quantity"],
+                                            balance[currency]["btc_value"])
 
     @property
     def url(self):
         raise NotImplementedError
+
+    @property
+    def total_btc_value(self):
+        return sum([self.coins[c].value for c in self.coins])
+
+    @property
+    def total_euro_value(self, limit=10):
+        ticker = self._api.ticker()
+        return float(ticker["USDT_BTC"]["last"]) * self.total_btc_value
 
     @property
     def markets(self):
@@ -107,8 +139,8 @@ class Exchange(object):
 class Poloniex(Exchange):
 
     def __init__(self, config):
-        """TODO: to be defined1. """
-        self._api = PoloniexApi(config)
+        api = PoloniexApi(config)
+        Exchange.__init__(self, config, api)
 
     @property
     def url(self):
