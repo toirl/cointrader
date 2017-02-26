@@ -39,7 +39,7 @@ def main(ctx, config):
 @click.option("--timeframe", help="Timeframe of the chart which is used for trend analysis", default="1d")
 @click.option("--automatic", help="Start cointrader in automatic mode.", is_flag=True)
 @pass_context
-def start(ctx, market, interval, resolution, timeframe, automatic):
+def start(ctx, market, resolution, timeframe, automatic):
     """Start a new bot on the given market"""
     # balance = ctx.exchange.get_balance("BTC")
     # btc = balance["btc_value"]
