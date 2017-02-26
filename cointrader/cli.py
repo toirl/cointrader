@@ -32,7 +32,6 @@ class Context(object):
 
     def __init__(self):
         self.exchange = None
-        self.interactiv = None
 
 
 pass_context = click.make_pass_decorator(Context, ensure=True)
@@ -41,9 +40,8 @@ pass_context = click.make_pass_decorator(Context, ensure=True)
 @click.group()
 @click.option("--config", help="Configuration File for cointrader.", type=click.File("r"))
 @click.option("--log-level", help="Loglevel.", default="ERROR")
-@click.option("--interactiv", help="Start cointrader in interactive mode.", is_flag=True)
 @pass_context
-def main(ctx, config, log_level, interactiv):
+def main(ctx, config, log_level):
     """Console script for cointrader on the Poloniex exchange"""
     setup_logging(log_level)
     if config:
@@ -51,30 +49,31 @@ def main(ctx, config, log_level, interactiv):
     else:
         config = Config(open(get_path_to_config(), "r"))
     ctx.exchange = Poloniex(config)
-    ctx.interactiv = interactiv
 
 
 @click.command()
 @click.argument("market")
-@click.option("--interval", help="Interval in seconds on which the bot becomes active", default=None, type=float)
 @click.option("--resolution", help="Resolution of the chart which is used for trend analysis", default="30m")
 @click.option("--timeframe", help="Timeframe of the chart which is used for trend analysis", default="1d")
-@click.option("--position", help="Position to trade. Defaults to 10% of your avaiable BTC", default=0.1)
+@click.option("--automatic", help="Start cointrader in automatic mode.", is_flag=True)
 @pass_context
-def start(ctx, market, interval, position, resolution, timeframe):
+def start(ctx, market, interval, resolution, timeframe, automatic):
     """Start a new bot on the given market"""
+    # balance = ctx.exchange.get_balance("BTC")
+    # btc = balance["btc_value"]
+
+    # # Calculate position to trade:
+    # trade_btc = btc * position
+    # trade_dollar = ctx.exchange.btc2dollar(trade_btc)
+    # log.debug("Will trade {}BTC / {}$ ({}%) out of total {}BTC".format(trade_btc, trade_dollar, position, btc))
+
     market = ctx.exchange.get_market(market)
-    balance = ctx.exchange.get_balance("BTC")
-    btc = balance["btc_value"]
-
-    # Calculate position to trade:
-    trade_btc = btc * position
-    trade_dollar = ctx.exchange.btc2dollar(trade_btc)
-    log.debug("Will trade {}BTC / {}$ ({}%) out of total {}BTC".format(trade_btc, trade_dollar, position, btc))
-
     strategy = Followtrend()
-    if ctx.interactiv:
+    if not automatic:
+        interval = 0  # Disable waiting in interactive mode
         strategy = InteractivStrategyWrapper(strategy)
+    else:
+        interval = ctx.exchange.resolution2seconds(resolution)
     bot = Cointrader(market, strategy, resolution, timeframe)
     bot.start(interval)
 
