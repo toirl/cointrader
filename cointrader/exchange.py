@@ -3,9 +3,6 @@
 from .exchanges.poloniex import Poloniex as PoloniexApi
 from .chart import Chart
 
-RESOLUTIONS = {"5m": 5 * 60, "15m": 15 * 60, "30m": 30 * 60, "2h": 60 * 60 * 2, "12h": 60 * 60 * 12}
-TIMEFRAME = {"5m": 5 * 60, "15m": 15 * 60, "30m": 30 * 60, "1h": 60 * 60, "2h": 60 * 60 * 2,
-             "6h": 60 * 60 * 6, "12h": 60 * 60 * 12, "1d": 60 * 60 * 24, "2d": 60 * 60 * 24 * 2, "1w": 60 * 60 * 24 * 7}
 CASH = {"0.01$": 0.01, "0.1$": 0.1, "1$": 1, "2$": 2, "5$": 5, "10$": 10, "25$": 25, "50$": 25}
 
 
@@ -60,6 +57,13 @@ class Market(object):
 class Exchange(object):
 
     """Baseclass for all exchanges"""
+    resolutions = {"5m": 5 * 60, "15m": 15 * 60,
+                   "30m": 30 * 60, "2h": 60 * 60 * 2,
+                   "12h": 60 * 60 * 12}
+    timeframes = {"5m": 5 * 60, "15m": 15 * 60, "30m": 30 * 60,
+                  "1h": 60 * 60, "2h": 60 * 60 * 2, "6h": 60 * 60 * 6,
+                  "12h": 60 * 60 * 12, "1d": 60 * 60 * 24,
+                  "2d": 60 * 60 * 24 * 2, "1w": 60 * 60 * 24 * 7}
 
     def __init__(self, config, api=None):
         """TODO: to be defined1. """
@@ -129,10 +133,10 @@ class Exchange(object):
         raise NotImplementedError
 
     def resolution2seconds(self, resolution):
-        return RESOLUTIONS[resolution]
+        return self.resolutions[resolution]
 
     def timeframe2seconds(self, timeframe):
-        return TIMEFRAME[timeframe]
+        return self.timeframes[timeframe]
 
 
 class Poloniex(Exchange):
