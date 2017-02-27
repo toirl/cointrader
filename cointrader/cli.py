@@ -102,6 +102,3 @@ def start(ctx, market, resolution, timeframe, automatic):
 main.add_command(explore)
 main.add_command(balance)
 main.add_command(start)
-
-if __name__ == "__main__":
-    main()
