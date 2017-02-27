@@ -34,13 +34,13 @@ class Api(object):
     def chart(self, currency, period=1800, timeframe=None):
         raise NotImplementedError()
 
-    def book(self, currency=None):
+    def book(self, currency):
         raise NotImplementedError()
 
     def balance(self):
         raise NotImplementedError()
 
-    def buy(self, market, btc, price=None):
+    def buy(self, market, amount, price=None):
         raise NotImplementedError()
 
     def sell(self, market, amount, price=None):
@@ -185,8 +185,8 @@ class Poloniex(Api):
             result[currency]["btc_value"] = float(tmp[currency]["btcValue"])
         return result
 
-    def buy(self, market, amount, rate):
-        return amount, rate
+    def buy(self, market, amount, price=None):
+        return amount, price
 
-    def sell(self, market, amount, rate):
-        return amount, rate
+    def sell(self, market, amount, price=None):
+        return amount, price
