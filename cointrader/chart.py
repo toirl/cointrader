@@ -29,6 +29,10 @@ class Chart(object):
         self._data = data
         self._stock = StockDataFrame.retype(pandas.read_csv(io.StringIO(chart2csv(data))))
 
+    @property
+    def data(self):
+        return self._data
+
     def values(self, which="close"):
         return [v[which] for v in self._data]
 
