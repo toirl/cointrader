@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import logging
-from ..strategy import Strategy, WAIT, SELL, BUY
+import datetime
+from ..strategy import Strategy, WAIT, SELL, BUY, signal_map
 
 log = logging.getLogger(__name__)
 
@@ -24,20 +25,40 @@ class Followtrend(Strategy):
         return signal
 
 
-def followtrend(data):
+def followtrend(data, sluggish=5):
     support = None
     resistance = None
-    last = data[0]
+    last = data[0][1]
     signal = WAIT
 
-    for v in data:
+    def breaks_resistance(v, resistance, sluggish):
+        resistance = resistance + (resistance / 100 * sluggish)
+        return v > resistance
+
+    def breaks_support(v, support, sluggish):
+        support = support - (support / 100 * sluggish)
+        return v < support
+
+    for item in data:
+        d = item[0]
+        v = item[1]
+        if resistance is None:
+            # We are searching a new resistance and wait for a change in
+            # the current trend.
+            if v < last:
+                resistance = last
+        if support is None:
+            # We are searching a new support and wait for a change in
+            # the current trend.
+            if v > last:
+                support = last
         if resistance is not None and support is not None:
             # Trend is now in correction phase. It s changing with in
             # the range of the last resistance and last support.
-            if v <= resistance and v >= support:
+            if not breaks_resistance(v, resistance, sluggish) and not breaks_support(v, support, sluggish):
                 # Nothing special here no signal.
                 signal = WAIT
-            elif v > resistance:
+            elif breaks_resistance(v, resistance, sluggish):
                 # Trend breaks the last resistance. This is a BUY
                 # signal. The resistiance is gone and the support will
                 # be the last resistance.
@@ -55,7 +76,7 @@ def followtrend(data):
 
                 resistance = None
                 signal = BUY
-            elif v < support:
+            elif breaks_support(v, support, sluggish):
                 # Trend breaks the last support. This is a SELL
                 # signal. The support is gone and the resistance will
                 # be the last support.
@@ -68,16 +89,10 @@ def followtrend(data):
 
                 support = None
                 signal = SELL
-        elif resistance is None:
-            # We are searching a new resistance and wait for a change in
-            # the current trend.
-            if v < last:
-                resistance = last
-        elif support is None:
-            # We are searching a new support and wait for a change in
-            # the current trend.
-            if v > last:
-                support = last
         last = v
-        log.debug("Signal: {}, Value: {}, Resistance: {}, Support: {}".format(signal, v, resistance, support))
+        log.debug("{} signal @ {}: Value: {}, Resistance: {}, Support: {}".format(signal_map[signal],
+                                                                                  datetime.datetime.utcfromtimestamp(d),
+                                                                                  v,
+                                                                                  resistance,
+                                                                                  support))
     return signal

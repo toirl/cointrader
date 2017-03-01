@@ -74,21 +74,14 @@ def balance(ctx):
 
 @click.command()
 @click.argument("market")
-@click.option("--resolution", help="Resolution of the chart which is used for trend analysis", default="30m")
-@click.option("--timeframe", help="Timeframe of the chart which is used for trend analysis", default="1d")
+@click.argument("btc", type=float)
+@click.option("--resolution", help="Resolution of the chart which is used for trend analysis", default="30m", type=click.Choice(Poloniex.resolutions.keys()))
+@click.option("--timeframe", help="Timeframe of the chart which is used for trend analysis", default="1d", type=click.Choice(Poloniex.timeframes.keys()))
 @click.option("--automatic", help="Start cointrader in automatic mode.", is_flag=True)
 @click.option("--backtest", help="Just backtest the strategy on the chart.", is_flag=True)
 @pass_context
-def start(ctx, market, resolution, timeframe, automatic, backtest):
-    """Start a new bot on the given market"""
-    # balance = ctx.exchange.get_balance("BTC")
-    # btc = balance["btc_value"]
-
-    # # Calculate position to trade:
-    # trade_btc = btc * position
-    # trade_dollar = ctx.exchange.btc2dollar(trade_btc)
-    # log.debug("Will trade {}BTC / {}$ ({}%) out of total {}BTC".format(trade_btc, trade_dollar, position, btc))
-
+def start(ctx, btc, market, resolution, timeframe, automatic, backtest):
+    """Start a new bot on the given market and the given amount of BTC"""
     market = ctx.exchange.get_market(market, backtest)
     strategy = Followtrend()
     if not automatic:
@@ -99,7 +92,19 @@ def start(ctx, market, resolution, timeframe, automatic, backtest):
     else:
         interval = ctx.exchange.resolution2seconds(resolution)
     bot = Cointrader(market, strategy, resolution, timeframe)
-    bot.start(interval, backtest)
+    stat = bot.start(btc, interval, backtest)
+
+    click.echo("Traded from {} until {}".format(stat["start"], stat["end"]))
+    click.echo("Trading started with a rate of {} BTC and ended at {} BTC".format(stat["start_price"], stat["end_price"]))
+    if stat["profit_cointrader"] < stat["profit_chart"]:
+        click.echo("Your strategy was less profitable than the market :(")
+    elif stat["profit_cointrader"] < stat["start_btc"]:
+        click.echo("Your strategy has lost money :(")
+    click.echo("Statistic:")
+    click.echo("Started with {} BTC".format(stat["start_btc"]))
+    click.echo("Ended with {} BTC".format(stat["end_btc"]))
+    click.echo("Cointrader makes: {}%".format(round(stat["profit_cointrader"], 2)))
+    click.echo("Market makes: {}%".format(round(stat["profit_chart"], 2)))
 
 
 main.add_command(explore)

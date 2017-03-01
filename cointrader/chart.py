@@ -34,7 +34,7 @@ class Chart(object):
         return self._data
 
     def values(self, which="close"):
-        return [v[which] for v in self._data]
+        return [(v["date"], v[which]) for v in self._data]
 
     def macdh(self):
         macdh = self._stock.get("macdh")
