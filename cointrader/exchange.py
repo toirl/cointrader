@@ -10,6 +10,10 @@ def get_market_name(market):
     return market[0]
 
 
+def add_fee(btc, fee=0.025):
+    return btc - (btc / 100 * fee)
+
+
 class Coin(object):
 
     """Docstring for Coin."""
@@ -51,12 +55,14 @@ class Market(object):
         return Chart(data)
 
     def buy(self, btc, price=None):
-        print("BUY")
+        # Calculate fee
+        btc = add_fee(btc)
         return 0, 1
 
     def sell(self, amount, price=None):
         print("SELL")
-        return 0, 1
+        btc = add_fee(1)
+        return btc, 1
 
 
 class BacktestMarket(Market):
@@ -87,12 +93,14 @@ class BacktestMarket(Market):
 
     def buy(self, btc, price=None):
         price = float(self._chart_data[0:self._backtest_tick][-1]['close'])
+        btc = add_fee(btc)
         amount = btc / price
         return amount, price
 
     def sell(self, amount, price=None):
         price = float(self._chart_data[0:self._backtest_tick][-1]['close'])
-        return amount * price, price
+        btc = add_fee(amount * price)
+        return btc, price
 
 
 class Exchange(object):
