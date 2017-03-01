@@ -41,17 +41,58 @@ class Market(object):
     def url(self):
         return "{}{}".format(self._exchange.url, self._name)
 
-    def get_chart(self, resolution="30m", timeframe="1d"):
-        data = self._exchange._api.chart(self._name,
+    def _get_chart_data(self, resolution, timeframe):
+        return self._exchange._api.chart(self._name,
                                          self._exchange.resolution2seconds(resolution),
                                          self._exchange.timeframe2seconds(timeframe))
+
+    def get_chart(self, resolution="30m", timeframe="1d"):
+        data = self._get_chart_data(resolution, timeframe)
         return Chart(data)
 
-    def buy(self):
+    def buy(self, btc, price=None):
         print("BUY")
+        return 0, 1
 
-    def sell(self):
+    def sell(self, amount, price=None):
         print("SELL")
+        return 0, 1
+
+
+class BacktestMarket(Market):
+
+    """Market to enable backtesting a strategy on the market."""
+
+    def __init__(self, exchange, name):
+        """TODO: to be defined1.
+
+        :exchange: TODO
+        :name: TODO
+
+        """
+        Market.__init__(self, exchange, name)
+        self._chart_data = None
+        self._backtest_tick = 1
+
+    def continue_backtest(self):
+        self._backtest_tick += 1
+        if self._chart_data and len(self._chart_data) >= self._backtest_tick:
+            return True
+        return False
+
+    def get_chart(self, resolution="30m", timeframe="1d"):
+        if self._chart_data is None:
+            self._chart_data = self._get_chart_data(resolution, timeframe)
+        return Chart(self._chart_data[0:self._backtest_tick])
+
+    def buy(self, btc, price=None):
+        price = float(self._chart_data[0:self._backtest_tick][-1]['close'])
+        amount = btc / price
+        return amount, price
+
+    def sell(self, amount, price=None):
+        price = float(self._chart_data[0:self._backtest_tick][-1]['close'])
+        return amount * price, price
 
 
 class Exchange(object):
@@ -59,11 +100,13 @@ class Exchange(object):
     """Baseclass for all exchanges"""
     resolutions = {"5m": 5 * 60, "15m": 15 * 60,
                    "30m": 30 * 60, "2h": 60 * 60 * 2,
-                   "12h": 60 * 60 * 12}
+                   "24h": 60 * 60 * 24}
     timeframes = {"5m": 5 * 60, "15m": 15 * 60, "30m": 30 * 60,
                   "1h": 60 * 60, "2h": 60 * 60 * 2, "6h": 60 * 60 * 6,
                   "12h": 60 * 60 * 12, "1d": 60 * 60 * 24,
-                  "2d": 60 * 60 * 24 * 2, "1w": 60 * 60 * 24 * 7}
+                  "2d": 60 * 60 * 24 * 2, "1w": 60 * 60 * 24 * 7,
+                  "1M": 60 * 60 * 24 * 31, "3M": 60 * 60 * 24 * 31 * 3,
+                  "1Y": 60 * 60 * 24 * 356}
 
     def __init__(self, config, api=None):
         """TODO: to be defined1. """
@@ -129,7 +172,7 @@ class Exchange(object):
         return sorted(markets.items(),
                       key=lambda x: (float(x[1]["volume"]), float(x[1]["change"])), reverse=True)[0:limit]
 
-    def get_market(self, market):
+    def get_market(self, market, backtest=False):
         raise NotImplementedError
 
     def resolution2seconds(self, resolution):
@@ -157,5 +200,8 @@ class Poloniex(Exchange):
     def get_balance(self, currency):
         return self._api.balance()[currency]
 
-    def get_market(self, name):
-        return Market(self, name)
+    def get_market(self, name, backtest=False):
+        if backtest:
+            return BacktestMarket(self, name)
+        else:
+            return Market(self, name)
