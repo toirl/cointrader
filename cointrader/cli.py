@@ -77,8 +77,9 @@ def balance(ctx):
 @click.option("--resolution", help="Resolution of the chart which is used for trend analysis", default="30m")
 @click.option("--timeframe", help="Timeframe of the chart which is used for trend analysis", default="1d")
 @click.option("--automatic", help="Start cointrader in automatic mode.", is_flag=True)
+@click.option("--backtest", help="Just backtest the strategy on the chart.", is_flag=True)
 @pass_context
-def start(ctx, market, resolution, timeframe, automatic):
+def start(ctx, market, resolution, timeframe, automatic, backtest):
     """Start a new bot on the given market"""
     # balance = ctx.exchange.get_balance("BTC")
     # btc = balance["btc_value"]
@@ -88,15 +89,17 @@ def start(ctx, market, resolution, timeframe, automatic):
     # trade_dollar = ctx.exchange.btc2dollar(trade_btc)
     # log.debug("Will trade {}BTC / {}$ ({}%) out of total {}BTC".format(trade_btc, trade_dollar, position, btc))
 
-    market = ctx.exchange.get_market(market)
+    market = ctx.exchange.get_market(market, backtest)
     strategy = Followtrend()
     if not automatic:
         interval = 0  # Disable waiting in interactive mode
         strategy = InteractivStrategyWrapper(strategy)
+    elif backtest:
+        interval = 0  # Wait 1 second until to the next signal
     else:
         interval = ctx.exchange.resolution2seconds(resolution)
     bot = Cointrader(market, strategy, resolution, timeframe)
-    bot.start(interval)
+    bot.start(interval, backtest)
 
 
 main.add_command(explore)
