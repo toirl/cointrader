@@ -51,7 +51,7 @@ looks like this and must be located in your `$HOME` directory with the filename
 Usage
 =====
 The cointrader application is CLI application and provides some basic commands
-which are hopefully usefull for your daily trading activity.
+which are hopefully useful for your daily trading activity.
 
 To get general help to the application please use the help flag::
 
@@ -61,9 +61,10 @@ Trading
 -------
 Cointrader can start its trading activity by using the following command::
 
-        contrader start BTC_DASH
+        contrader start BTC_DASH BTC
 
-Cointrader expects a valid currency pair as argument to the start command.
+Cointrader expects a valid currency pair as argument and the start amount of
+BTC to the start command.
 Please not that the naming of the currency pair is depended on the configured
 exchange.
 
@@ -80,6 +81,10 @@ for more information.
 
 The resolution can be changed by using the `--resolution` option. See `--help`
 for more information.
+
+Trading can be simulated the chart data. This is called backtesting and very
+useful to check how good your strategy performs. To start trading in backtest
+mode set the `--backtest` flag.
 
 If you want to start your trading session in a automatic session you can set
 the `--automatic` flag. Cointrader will then automatically take action on the
@@ -119,8 +124,8 @@ will give you an output like this::
         BTC_ETH      3.21%     5138.0 https://poloniex.com/exchange#btc_eth
 
 If the command gives no output means that there are no markets in the top three
-which met bot critera. In this sitution you can either use the `--top`
-attribute to increase the amount of markets which are consired as interesting.
+which met bot criteria. In this situation you can either use the `--top`
+attribute to increase the amount of markets which are considered as interesting.
 
 Alternatively you can use the `--order-by-volume` and `--order-by-profit` flag
 to only look on profit or volume markets.
