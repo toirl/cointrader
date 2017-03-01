@@ -36,13 +36,13 @@ Features
 * Explore exchange for interesting markets to trade on
 * Show your balances
 * Semiautomatic trading. Just emitting trading signals.
+* Backtest capabilities
 
 Planned
 -------
 
-* Backtesting
 * Risk- and Money management
- 
+
  * Stop loss limits
  * Take profit limits
 
