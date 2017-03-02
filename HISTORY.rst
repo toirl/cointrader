@@ -2,8 +2,12 @@
 History
 =======
 
-0.3.0 (not yet released)
+0.4.0 (not yet released)
 ------------------------
+TODO
+
+0.3.0 (2017-03-02)
+------------------
 * Added backtest functionality. Cointrader can simulate trading in
   backtest mode. In this mode the trade is done on historic chart data. This
   is useful to check the performance of your trading strategy. Please note
