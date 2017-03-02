@@ -27,6 +27,7 @@ trading.
 
 * Status: Alpha
 * Free software: MIT license
+* Source: https://github.com/toirl/cointrader
 * Documentation: https://cointrader.readthedocs.io.
 
 
