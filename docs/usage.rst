@@ -1,52 +1,3 @@
-=============
-Configuration
-=============
-Contraider uses a configuration file to set some important settings like the
-key and the secret for the API on the configured exchange. A configuration
-looks like this and must be located in your `$HOME` directory with the filename
-`.cointrader.ini`. Please make sure you have created a configuration file.::
-
-        [DEFAULT]
-        # Set default exchange which will be used for trading.
-        # Currently onyl Poloniex is supported!
-        exchange = poloniex
-
-        [poloniex]
-        # See https://poloniex.com/apiKeys for more details.
-        api_key = YOUR-API-KEY-HERE
-        api_secret = YOUR-API-SECRET-HERE
-
-        #
-        ## Default logging configuration of the application.
-        #
-        [loggers]
-        keys = root, cointrader
-
-        [handlers]
-        keys = console
-
-        [formatters]
-        keys = generic
-
-        [logger_root]
-        level = ERROR
-        handlers = console
-
-        [logger_cointrader]
-        level = INFO
-        handlers =
-        qualname = cointrader
-
-        [handler_console]
-        class = StreamHandler
-        args = (sys.stderr,)
-        level = NOTSET
-        formatter = generic
-
-        [formatter_generic]
-        format = %(asctime)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s
-
-
 =====
 Usage
 =====
@@ -64,7 +15,8 @@ Cointrader can start its trading activity by using the following command::
         contrader start BTC_DASH BTC
 
 Cointrader expects a valid currency pair as argument and the start amount of
-BTC to the start command.
+BTC to the start command. **Tip:** You can use the :ref:`exchange_command` to
+calculate the amount of BTC from given dollar.
 Please not that the naming of the currency pair is depended on the configured
 exchange.
 
@@ -82,9 +34,8 @@ for more information.
 The resolution can be changed by using the `--resolution` option. See `--help`
 for more information.
 
-Trading can be simulated the chart data. This is called backtesting and very
-useful to check how good your strategy performs. To start trading in backtest
-mode set the `--backtest` flag.
+Trading can be simulated in backtest mode. To start trading in backtest
+mode set the `--backtest` flag. See :ref:`backtest` for more details.
 
 If you want to start your trading session in a automatic session you can set
 the `--automatic` flag. Cointrader will then automatically take action on the
@@ -129,6 +80,8 @@ attribute to increase the amount of markets which are considered as interesting.
 
 Alternatively you can use the `--order-by-volume` and `--order-by-profit` flag
 to only look on profit or volume markets.
+
+.. _exchange_command:
 
 Exchange
 --------
