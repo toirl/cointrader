@@ -22,7 +22,7 @@ test_requirements = [
 
 setup(
     name='cointrader',
-    version='0.2.0',
+    version='0.3.0',
     description="Cointrader is a trading application for crypto currencies.",
     long_description=readme + '\n\n' + history,
     author="Torsten Irländer",
