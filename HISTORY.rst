@@ -10,6 +10,8 @@ History
   that the backtest is not 100% accurate as buy and sell prices are based on the
   closing price of the currency. This is idealistic and will not reflect the
   whole market situation.
+* Added new "exchange" command. Can be used to calculate how many BTC you get
+  for a certain amount of USD.
 
 0.2.0 (2017-02-26)
 ------------------

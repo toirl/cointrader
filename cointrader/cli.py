@@ -107,6 +107,16 @@ def start(ctx, btc, market, resolution, timeframe, automatic, backtest):
     click.echo("Market makes: {}%".format(round(stat["profit_chart"], 2)))
 
 
+@click.command()
+@click.argument("dollar", type=float)
+@pass_context
+def exchange(ctx, dollar):
+    """Will return how many BTC you get for the given amount of dollar"""
+    btc = ctx.exchange.dollar2btc(dollar)
+    click.echo("{}$ ~ {}BTC".format(dollar, btc))
+
+
 main.add_command(explore)
 main.add_command(balance)
+main.add_command(exchange)
 main.add_command(start)

@@ -130,3 +130,10 @@ attribute to increase the amount of markets which are considered as interesting.
 Alternatively you can use the `--order-by-volume` and `--order-by-profit` flag
 to only look on profit or volume markets.
 
+Exchange
+--------
+Exchange is a simple helper command to calculate how many BTC you get for a
+certain amount of USD::
+
+        cointrader change 50                                                                                                     2.Mär.17 23.09
+        -> 50.0$ ~ 0.03999086BTC # 2017-03-02

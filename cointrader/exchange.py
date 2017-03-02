@@ -205,6 +205,11 @@ class Poloniex(Exchange):
         rate = float(ticker["last"])
         return round(amount * rate, 2)
 
+    def dollar2btc(self, amount):
+        ticker = self._api.ticker("USDT_BTC")
+        rate = float(ticker["last"])
+        return round(amount / rate, 8)
+
     def get_balance(self, currency):
         return self._api.balance()[currency]
 
