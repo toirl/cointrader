@@ -21,6 +21,9 @@ class Strategy(object):
 
     """Docstring for Strategy. """
 
+    def __str__(self):
+        return "{}".format(self.__class__)
+
     def __init__(self):
         self._signal_history = []
         """Store last emitted signals"""
@@ -39,6 +42,9 @@ class InteractivStrategyWrapper(object):
 
     def __init__(self, strategie):
         self._strategie = strategie
+
+    def __str__(self):
+        return "Interavtiv: {}".format(self._strategie)
 
     def signal(self, market, resolution, timeframe):
         """Will return either a BUY, SELL or WAIT signal for the given
