@@ -40,10 +40,64 @@ class Api(object):
     def balance(self):
         raise NotImplementedError()
 
-    def buy(self, market, amount, price=None):
+    def buy(self, market, amount, price, option=None):
+        """Places a limit buy order in a given market. Required POST
+        parameters are "currencyPair", "rate", and "amount". If
+        successful, the method will return the order number. Sample
+        output::
+
+            {"orderNumber":31226040,"resultingTrades":[{"amount":"338.8732","date":"2014-10-18
+            23:03:21","rate":"0.00000173","total":"0.00058625","tradeID":"16164","type":"buy"}]}
+
+        'total' is the amount of btc after applying the fee of the order.
+        This is the amount of BTC you actually used in the the order.
+
+        You may optionally set "fillOrKill", "immediateOrCancel",
+        "postOnly" to 1. A fill-or-kill order will either fill in its
+        entirety or be completely aborted. An immediate-or-cancel order
+        can be partially or completely filled, but any portion of the
+        order that cannot be filled immediately will be canceled rather
+        than left on the order book. A post-only order will only be
+        placed if no portion of it fills immediately; this guarantees
+        you will never pay the taker fee on any
+        part of the order that fills.
+
+        :market: Currency pair like BTC_DASH.
+        :amount: How many coins do you want to buy
+        :price: For which price do you want to buy?
+        :option: See docsstring for more details
+        :returns: Dict with details on order.
+        """
         raise NotImplementedError()
 
     def sell(self, market, amount, price=None):
+        """Places a limit sell order in a given market. Required POST
+        parameters are "currencyPair", "rate", and "amount". If
+        successful, the method will return the order number. Sample
+        output::
+
+            {"orderNumber":31226040,"resultingTrades":[{"amount":"338.8732","date":"2014-10-18
+            23:03:21","rate":"0.00000173","total":"0.00058625","tradeID":"16164","type":"sell"}]}
+
+        'total' is the amount of btc after applying the fee of the order.
+        This is the amount of BTC you actually used in the the order.
+
+        You may optionally set "fillOrKill", "immediateOrCancel",
+        "postOnly" to 1. A fill-or-kill order will either fill in its
+        entirety or be completely aborted. An immediate-or-cancel order
+        can be partially or completely filled, but any portion of the
+        order that cannot be filled immediately will be canceled rather
+        than left on the order book. A post-only order will only be
+        placed if no portion of it fills immediately; this guarantees
+        you will never pay the taker fee on any
+        part of the order that fills.
+
+        :market: Currency pair like BTC_DASH.
+        :amount: How many coins do you want to buy
+        :price: For which price do you want to buy?
+        :option: See docsstring for more details
+        :returns: Dict with details on order.
+        """
         raise NotImplementedError()
 
 
@@ -185,8 +239,43 @@ class Poloniex(Api):
             result[currency]["btc_value"] = float(tmp[currency]["btcValue"])
         return result
 
-    def buy(self, market, amount, price=None):
-        return amount, price
+    def buy(self, market, amount, price, option):
+        params = {"command": "buy",
+                  "currencyPair": market,
+                  "rate": price,
+                  "amount": amount,
+                  "nonce": int(time.time() * 1000)}
 
-    def sell(self, market, amount, price=None):
-        return amount, price
+        if option == "fillOrKill":
+            params["fillOrKill"] = 1
+        elif option == "immediateOrCancel":
+            params["immediateOrCancel"] = 1
+        elif option == "postOnly":
+            params["postOnly"] = 1
+
+        sign = hmac.new(str(self.secret), urllib.urlencode(params), hashlib.sha512).hexdigest()
+        headers = {"Key": self.key, "Sign": sign}
+        r = requests.post("https://poloniex.com/tradingApi", data=params, headers=headers)
+        result = json.loads(r.content)
+        import pdb
+        pdb.set_trace()
+        return result
+
+    def sell(self, market, amount, price, option=None):
+        params = {"command": "sell",
+                  "currencyPair": market,
+                  "rate": price,
+                  "amount": amount,
+                  "nonce": int(time.time() * 1000)}
+
+        if option == "fillOrKill":
+            params["fillOrKill"] = 1
+        elif option == "immediateOrCancel":
+            params["immediateOrCancel"] = 1
+        elif option == "postOnly":
+            params["postOnly"] = 1
+
+        sign = hmac.new(str(self.secret), urllib.urlencode(params), hashlib.sha512).hexdigest()
+        headers = {"Key": self.key, "Sign": sign}
+        r = requests.post("https://poloniex.com/tradingApi", data=params, headers=headers)
+        return json.loads(r.content)
