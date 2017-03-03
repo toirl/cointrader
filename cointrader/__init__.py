@@ -11,5 +11,3 @@ Base = declarative_base()
 engine = sa.create_engine('sqlite:///cointrader.db')
 Session = sa.orm.sessionmaker(bind=engine)
 db = Session()
-
-Base.metadata.create_all(engine)
