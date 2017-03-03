@@ -93,22 +93,38 @@ class BacktestMarket(Market):
 
     def buy(self, btc, price=None):
         price = float(self._chart_data[0:self._backtest_tick][-1]['close'])
+        date = datetime.datetime.utcfromtimestamp(self._chart_data[0:self._backtest_tick][-1]['date'])
         btc = add_fee(btc)
         amount = btc / price
-        return amount, price
+        return {u'orderNumber': u'{}'.format(int(time.time() * 1000)),
+                u'resultingTrades': [
+                    {u'tradeID': u'{}'.format(int(time.time() * 1000)),
+                     u'rate': u'{}'.format(price),
+                     u'amount': u'{}'.format(amount),
+                     u'date': u'{}'.format(date),
+                     u'total': u'{}'.format(btc),
+                     u'type': u'buy'}]}
 
     def sell(self, amount, price=None):
         price = float(self._chart_data[0:self._backtest_tick][-1]['close'])
+        date = datetime.datetime.utcfromtimestamp(self._chart_data[0:self._backtest_tick][-1]['date'])
         btc = add_fee(amount * price)
-        return btc, price
+        return {u'orderNumber': u'{}'.format(int(time.time() * 1000)),
+                u'resultingTrades': [
+                    {u'tradeID': u'{}'.format(int(time.time() * 1000)),
+                     u'rate': u'{}'.format(price),
+                     u'amount': u'{}'.format(amount),
+                     u'date': u'{}'.format(date),
+                     u'total': u'{}'.format(btc),
+                     u'type': u'sell'}]}
 
 
 class Exchange(object):
 
     """Baseclass for all exchanges"""
     resolutions = {"5m": 5 * 60, "15m": 15 * 60,
-                   "30m": 30 * 60, "2h": 60 * 60 * 2,
-                   "24h": 60 * 60 * 24}
+                   "30m": 30 * 60, "1h": 60 * 60 * 1,
+                   "2h": 60 * 60 * 2, "4h": 60 * 60 * 4, "24h": 60 * 60 * 24}
     timeframes = {"5m": 5 * 60, "15m": 15 * 60, "30m": 30 * 60,
                   "1h": 60 * 60, "2h": 60 * 60 * 2, "6h": 60 * 60 * 6,
                   "12h": 60 * 60 * 12, "1d": 60 * 60 * 24,
