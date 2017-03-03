@@ -2,10 +2,54 @@
 import datetime
 import time
 import logging
-from . import Base, sa
+import sqlalchemy as sa
+from . import Base, engine, db
 from .strategy import BUY, SELL, WAIT
 
 log = logging.getLogger(__name__)
+
+
+class Trade(Base):
+    """Trading log"""
+    __tablename__ = "trades"
+    id = sa.Column(sa.Integer, primary_key=True)
+    bot_id = sa.Column(sa.Integer, sa.ForeignKey('bots.id'))
+    date = sa.Column(sa.DateTime, nullable=False, default=datetime.datetime.utcnow)
+    order_type = sa.Column(sa.String, nullable=False)
+    order_id = sa.Column(sa.Integer, nullable=False)
+    trade_id = sa.Column(sa.Integer, nullable=False)
+    market = sa.Column(sa.String, nullable=False)
+    amount = sa.Column(sa.Float, nullable=False)
+    rate = sa.Column(sa.Float, nullable=False)
+    btc = sa.Column(sa.Float, nullable=False)
+    btc_taxed = sa.Column(sa.Float, nullable=False)
+
+    def __init__(self, bot_id, date, order_type, order_id, trade_id, market, amount, rate, btc, btc_taxed):
+        """TODO: to be defined1.
+
+        :bot_id: ID of the bot which initiated the trade
+        :date: Date of the order
+        :order_id: ID of the order
+        :trade_id: ID of a single trade within the order
+        :market: Currency_pair linke BTC_DASH
+        :amount: How many coins bought/sold in order
+        :rate: Rate for the order
+        :order_type: Type of order. Can be either "BUY, SELL"
+        :btc: How many BTC you placed in order
+        :btc_taxed: How many BTC are actually used in order after applying the tax
+
+        """
+        self.bot_id = bot_id
+        self.date = datetime.datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+        self.order_type = order_type
+        self.order_id = order_id
+        self.trade_id = trade_id
+        self.market = market
+        self.amount = amount
+        self.rate = rate
+        self.btc = btc
+        self.btc_taxed = btc_taxed
+        log.info("{}: Bought {} for {}".format(self.date, self.amount, self.rate))
 
 
 class Cointrader(Base):
