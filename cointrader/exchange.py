@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import datetime
+import time
 from .exchanges.poloniex import Poloniex as PoloniexApi
 from .chart import Chart
 
@@ -52,15 +54,38 @@ class Market(object):
         data = self._get_chart_data(resolution, timeframe)
         return Chart(data)
 
-    def buy(self, btc, price=None):
-        # Calculate fee
-        btc = add_fee(btc)
-        return 0, 1
+    def buy(self, btc, price=None, option=None):
+        """Will buy coins on the market for the given amount of BTC. On
+        default we will make a market order which means we will try to
+        buy for the best price available. If price is given the order
+        will be placed for at the given price. You can optionally
+        provide some options. See
+        :class:`cointrader.exchanges.poloniex.api` for more details.
+
+        :btc: Amount of BTC
+        :price: Optionally price for which you want to buy
+        :option: Optionally some buy options
+        :returns: Dict witch details on the order.
+        """
+        if price is None:
+            # Get best price on market.
+            orderbook = self._exchange._api.book(self._name)
+            asks = orderbook["asks"]  # Asks in the meaning of "Who wants to buy my coins?"
+            best_offer = asks[-1]
+            price = float(best_offer[0])
+            amount = btc / price
+        # return  self._exchange._api.buy(self._name, amount, price, option)
+        return {u'orderNumber': u'77875861209', u'resultingTrades': [{u'tradeID': u'3070199', u'rate': u'0.03370000', u'amount': u'0.00588054', u'date': u'2017-03-03 09:33:48', u'total': u'0.00019817', u'type': u'buy'}]}
 
     def sell(self, amount, price=None):
-        print("SELL")
-        btc = add_fee(1)
-        return btc, 1
+        if price is None:
+            # Get best price on market.
+            orderbook = self._exchange._api.book(self._name)
+            bids = orderbook["bids"]  # Asks in the meaning of "Who wants to buy my coins?"
+            best_offer = bids[-1]
+            price = float(best_offer[0])
+        # result self._exchange._api.sell(self._name, amount, price, option)
+        return {u'orderNumber': u'77875861209', u'resultingTrades': [{u'tradeID': u'3070199', u'rate': u'0.03370000', u'amount': u'0.00588054', u'date': u'2017-03-03 09:33:48', u'total': u'0.00019817', u'type': u'buy'}]}
 
 
 class BacktestMarket(Market):
