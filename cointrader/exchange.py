@@ -3,8 +3,6 @@
 from .exchanges.poloniex import Poloniex as PoloniexApi
 from .chart import Chart
 
-CASH = {"0.01$": 0.01, "0.1$": 0.1, "1$": 1, "2$": 2, "5$": 5, "10$": 10, "25$": 25, "50$": 25}
-
 
 def get_market_name(market):
     return market[0]
