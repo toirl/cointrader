@@ -4,9 +4,32 @@ import time
 import logging
 import sqlalchemy as sa
 from . import Base, engine, db
-from .strategy import BUY, SELL, WAIT
+from .strategy import BUY, SELL
 
 log = logging.getLogger(__name__)
+
+
+def init_db():
+    Base.metadata.create_all(engine)
+
+
+def get_bot(market, strategy, resolution, timeframe, btc):
+    try:
+        bot = db.query(Cointrader).filter(Cointrader.market == market._name).one()
+        bot._market = market
+        bot.strategy = str(strategy)
+        bot._strategy = strategy
+        bot._resolution = resolution
+        bot._timeframe = timeframe
+    except sa.orm.exc.NoResultFound:
+        bot = Cointrader(market, strategy, resolution, timeframe)
+        if btc is None:
+            balances = market._exchange.get_balance()
+            btc = balances["BTC"]["quantity"]
+        bot.set_btc(btc)
+        db.add(bot)
+    db.commit()
+    return bot
 
 
 class Trade(Base):
