@@ -4,7 +4,8 @@ History
 
 0.4.0 (not yet released)
 ------------------------
-TODO
+* Enabled Trading
+* Added Tradelog
 
 0.3.0 (2017-03-02)
 ------------------

@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 __author__ = """Torsten Irländer"""
 __email__ = 'torsten.irlaender@googlemail.com'
-__version__ = '0.3.0'
+__version__ = '0.4.0'
 
 Base = declarative_base()
 

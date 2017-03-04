@@ -38,6 +38,8 @@ Features
 * Show your balances
 * Semiautomatic trading. Just emitting trading signals.
 * Backtest capabilities
+* Trade logbook
+* Profit/Loss analysis
 
 Planned
 -------
@@ -47,7 +49,6 @@ Planned
  * Stop loss limits
  * Take profit limits
 
-* Trade logbook, Profit/Loss analysis
 * Full automatic trading
 * Pluggable external trading strategies
 * Support more exchanges
