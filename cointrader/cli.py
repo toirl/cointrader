@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import click
 import logging
+from . import db
 from .config import Config, get_path_to_config
 from .exchange import Poloniex
-from .cointrader import Cointrader
+from .cointrader import init_db, get_bot
 from .strategy import InteractivStrategyWrapper
 from .strategies.trend import Followtrend
 
@@ -26,6 +27,7 @@ pass_context = click.make_pass_decorator(Context, ensure=True)
 @pass_context
 def main(ctx, config):
     """Console script for cointrader on the Poloniex exchange"""
+    init_db()
     if config:
         config = Config(config)
     else:
@@ -91,20 +93,35 @@ def start(ctx, btc, market, resolution, timeframe, automatic, backtest):
         interval = 0  # Wait 1 second until to the next signal
     else:
         interval = ctx.exchange.resolution2seconds(resolution)
-    bot = Cointrader(market, strategy, resolution, timeframe)
-    stat = bot.start(btc, interval, backtest)
 
+    bot = get_bot(market, strategy, resolution, timeframe, btc)
+
+    start_btc = bot.btc
+    start_amount = bot.amount
+
+    bot.start(interval, backtest)
+
+    stat = bot.stat(start_btc, start_amount, backtest)
+
+    click.echo("")
+    click.echo("=========")
+    click.echo("Statistic")
+    click.echo("=========")
     click.echo("Traded from {} until {}".format(stat["start"], stat["end"]))
-    click.echo("Trading started with a rate of {} BTC and ended at {} BTC".format(stat["start_price"], stat["end_price"]))
-    if stat["profit_cointrader"] < stat["profit_chart"]:
-        click.echo("Your strategy was less profitable than the market :(")
-    elif stat["profit_cointrader"] < stat["start_btc"]:
-        click.echo("Your strategy has lost money :(")
-    click.echo("Statistic:")
     click.echo("Started with {} BTC".format(stat["start_btc"]))
     click.echo("Ended with {} BTC".format(stat["end_btc"]))
     click.echo("Cointrader makes: {}%".format(round(stat["profit_cointrader"], 2)))
     click.echo("Market makes: {}%".format(round(stat["profit_chart"], 2)))
+    click.echo("Trading started with a rate of {} BTC and ended at {} BTC".format(stat["start_rate"], stat["end_rate"]))
+    click.echo("")
+    if stat["profit_cointrader"] < stat["profit_chart"]:
+        click.echo("Your strategy was less profitable than the market :(")
+    elif stat["profit_cointrader"] < stat["start_btc"]:
+        click.echo("Your strategy has lost money :(")
+    click.echo("")
+
+    db.delete(bot)
+    db.commit()
 
 
 @click.command()
