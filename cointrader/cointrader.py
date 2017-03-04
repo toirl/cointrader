@@ -4,7 +4,7 @@ import time
 import logging
 import sqlalchemy as sa
 from . import Base, engine, db
-from .strategy import BUY, SELL
+from .strategy import BUY, SELL, QUIT
 
 log = logging.getLogger(__name__)
 
@@ -217,6 +217,9 @@ class Cointrader(Base):
                 self._buy()
             elif signal == SELL and self.amount:
                 self._sell()
+            elif signal == QUIT:
+                log.info("Bot stopped")
+                break
             if backtest:
                 if not self._market.continue_backtest():
                     log.info("Backtest finished")

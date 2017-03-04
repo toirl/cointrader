@@ -9,10 +9,12 @@ log = logging.getLogger(__name__)
 BUY = 1
 SELL = -1
 WAIT = 0
+QUIT = -99
 signal_map = {
     BUY: "BUY",
     WAIT: "WAIT",
-    SELL: "SELL"
+    SELL: "SELL",
+    QUIT: "QUIT"
 }
 # Signals for strategies.
 
@@ -57,7 +59,7 @@ class InteractivStrategyWrapper(object):
         click.echo('Url: {}'.format(market.url))
         click.echo('Signal: {}'.format(signal_map[signal]))
         click.echo('What should I do? Press any key to continue')
-        click.echo('[b (buy), s (sell)], d (details), space (wait)]')
+        click.echo('[b (buy), s (sell)], d (details), space (wait), q (quit)]')
         c = click.getchar()
         if c == 'b':
             return BUY
@@ -66,5 +68,7 @@ class InteractivStrategyWrapper(object):
         if c == 'd':
             click.echo(self._strategie.details(market, resolution, timeframe))
             return self.signal(market, resolution, timeframe)
+        if c == 'q':
+            return QUIT
         else:
             return WAIT
