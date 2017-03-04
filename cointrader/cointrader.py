@@ -72,7 +72,10 @@ class Trade(Base):
         self.rate = rate
         self.btc = btc
         self.btc_taxed = btc_taxed
-        log.info("{}: Bought {} for {}".format(self.date, self.amount, self.rate))
+        if self.order_type == "BUY":
+            log.info("{}: BUY {} @ {} paid -> {} BTC".format(self.date, self.amount, self.rate, self.btc_taxed))
+        else:
+            log.info("{}: SELL {} @ {} earned -> {} BTC".format(self.date, self.amount, self.rate, self.btc_taxed))
 
 
 class Cointrader(Base):
