@@ -249,8 +249,11 @@ class Poloniex(Exchange):
         rate = float(ticker["last"])
         return round(amount / rate, 8)
 
-    def get_balance(self, currency):
-        return self._api.balance()[currency]
+    def get_balance(self, currency=None):
+        if currency is None:
+            return self._api.balance()
+        else:
+            return self._api.balance()[currency]
 
     def get_market(self, name, backtest=False):
         if backtest:
