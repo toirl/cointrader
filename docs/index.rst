@@ -11,7 +11,8 @@ Contents:
    usage
    strategies
    contributing
-   authorshistory
+   authors
+   history
 
 Indices and tables
 ==================

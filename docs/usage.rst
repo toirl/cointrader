@@ -10,37 +10,56 @@ To get general help to the application please use the help flag::
 
 Trading
 -------
-Cointrader can start its trading activity by using the following command::
+You can start trading by using the following command. Cointrader expects a
+valid currency pair as argument and the start amount of BTC to the start
+command. Please not that the naming of the currency pair is depended on the
+configured exchange.::
 
-        contrader start BTC_DASH BTC
+        contrader start BTC_DASH
 
-Cointrader expects a valid currency pair as argument and the start amount of
-BTC to the start command. **Tip:** You can use the :ref:`exchange_command` to
+Cointrader will try to load a previously created bot for the given market from
+the database and build the current state of the bot from the trade log. If no
+bot can be loaded a new bot will be created. 
+
+**On default cointrader will use use the complete available amount of BTC and
+coins for trading for the new bot!** You can change this by using the `--btc` or
+`--amount` parameter to set the initial amount of BTC and coins the bot will
+use for trading.  **Tip:** You can use the :ref:`exchange_command` to
 calculate the amount of BTC from given dollar.
-Please not that the naming of the currency pair is depended on the configured
-exchange.
 
-Without any further arguments cointrader will start an interactive trading
-session. Cointrader will emit trading signals (BUY, WAIT, SELL) and waits for
-your decision what to do.
+With no further options cointrader will work on a chart of the last 24H in a
+resolution of 30min. The time frame can be changed by using the `--timeframe`
+option. See `--help` for more information. The resolution can be changed by
+using the `--resolution` option. See `--help` for more information.
 
-The trading signals are based on a technical
-analysis with the default trading strategy on a candlestick chart of the last
-24H in a 30 minutes resolution.
+.. index::
+   single: Backtest
 
-The time frame can be changed by using the `--timeframe` option. See `--help`
-for more information.
-
-The resolution can be changed by using the `--resolution` option. See `--help`
-for more information.
-
-Trading can be simulated in backtest mode. To start trading in backtest
+Trading can be done in backtest mode. To start trading in backtest
 mode set the `--backtest` flag. See :ref:`backtest` for more details.
 
+.. index::
+   single: Dryrun
+
+Cointrader can simulate trading by set the `dry-run` flag. In this mode
+cointrader will place no real orders on the market.
+
+.. index::
+   single: interactive trading
+
+Interactive trading
+^^^^^^^^^^^^^^^^^^^
+Without any further arguments cointrader will start an *interactive trading
+session*. Cointrader will emit trading signals (BUY, WAIT, SELL) and waits for
+your decision what to do.
+
+Automatic trading
+^^^^^^^^^^^^^^^^^
 If you want to start your trading session in a automatic session you can set
 the `--automatic` flag. Cointrader will then automatically take action on the
 emitted trading signals. In automatic mode the resolution will determine
 between two trading actions.
+
 
 Balance
 -------
