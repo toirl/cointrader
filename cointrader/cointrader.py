@@ -29,7 +29,7 @@ def init_db():
     Base.metadata.create_all(engine)
 
 
-def get_bot(market, strategy, resolution, timeframe, btc):
+def get_bot(market, strategy, resolution, timeframe, btc, amount):
     try:
         bot = db.query(Cointrader).filter(Cointrader.market == market._name).one()
         log.info("Loading bot {} {}".format(bot.market, bot.id))
@@ -49,7 +49,11 @@ def get_bot(market, strategy, resolution, timeframe, btc):
         if btc is None:
             balances = market._exchange.get_balance()
             btc = balances["BTC"]["quantity"]
+        if amount is None:
+            balances = market._exchange.get_balance()
+            amount = balances[market.currency]["quantity"]
         bot.btc = btc
+        bot.amount = amount
         chart = market.get_chart(resolution, timeframe)
         rate = chart._data[-1]["close"]
         trade = Trade(datetime.datetime.now(), "INIT", 0, 0, market._name, 0, rate, btc, btc)
