@@ -4,7 +4,7 @@ History
 
 0.4.0 (not yet released)
 ------------------------
-* Enabled Trading
+* Enabled Trading in dry mode
 * Added Tradelog
 
 0.3.0 (2017-03-02)

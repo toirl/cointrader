@@ -257,8 +257,6 @@ class Poloniex(Api):
         headers = {"Key": self.key, "Sign": sign}
         r = requests.post("https://poloniex.com/tradingApi", data=params, headers=headers)
         result = json.loads(r.content)
-        import pdb
-        pdb.set_trace()
         return result
 
     def sell(self, market, amount, price, option=None):

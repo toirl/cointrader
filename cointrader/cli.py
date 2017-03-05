@@ -81,10 +81,11 @@ def balance(ctx):
 @click.option("--timeframe", help="Timeframe of the chart which is used for trend analysis", default="1d", type=click.Choice(Poloniex.timeframes.keys()))
 @click.option("--automatic", help="Start cointrader in automatic mode.", is_flag=True)
 @click.option("--backtest", help="Just backtest the strategy on the chart.", is_flag=True)
+@click.option("--dry-run", help="Just simulate the trading.", is_flag=True)
 @pass_context
-def start(ctx, btc, market, resolution, timeframe, automatic, backtest):
+def start(ctx, btc, market, resolution, timeframe, automatic, backtest, dry_run):
     """Start a new bot on the given market and the given amount of BTC"""
-    market = ctx.exchange.get_market(market, backtest)
+    market = ctx.exchange.get_market(market, backtest, dry_run)
     strategy = Followtrend()
     if not automatic:
         interval = 0  # Disable waiting in interactive mode

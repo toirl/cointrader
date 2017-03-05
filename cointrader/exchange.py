@@ -32,7 +32,7 @@ class Market(object):
 
     """Docstring for Market. """
 
-    def __init__(self, exchange, name):
+    def __init__(self, exchange, name, dry_run):
         """TODO: to be defined1.
 
         :name: TODO
@@ -40,6 +40,7 @@ class Market(object):
         """
         self._exchange = exchange
         self._name = name
+        self._dry_run = dry_run
 
     @property
     def url(self):
@@ -73,9 +74,22 @@ class Market(object):
             asks = orderbook["asks"]  # Asks in the meaning of "Who wants to buy my coins?"
             best_offer = asks[-1]
             price = float(best_offer[0])
-            amount = btc / price
-        # return  self._exchange._api.buy(self._name, amount, price, option)
-        return {u'orderNumber': u'77875861209', u'resultingTrades': [{u'tradeID': u'3070199', u'rate': u'0.03370000', u'amount': u'0.00588054', u'date': u'2017-03-03 09:33:48', u'total': u'0.00019817', u'type': u'buy'}]}
+        amount = btc / price
+        if self._dry_run:
+            btc = add_fee(btc)
+            amount = add_fee(amount)
+            date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            return {u'orderNumber': u'{}'.format(int(time.time() * 1000)),
+                    u'resultingTrades': [
+                        {u'tradeID': u'{}'.format(int(time.time() * 1000)),
+                         u'rate': u'{}'.format(price),
+                         u'amount': u'{}'.format(amount),
+                         u'date': u'{}'.format(date),
+                         u'total': u'{}'.format(btc),
+                         u'type': u'buy'}]}
+        else:
+            raise NotImplementedError("Real trading is not yet activated.")
+            # return  self._exchange._api.buy(self._name, amount, price, option)
 
     def sell(self, amount, price=None):
         if price is None:
@@ -84,8 +98,22 @@ class Market(object):
             bids = orderbook["bids"]  # Asks in the meaning of "Who wants to buy my coins?"
             best_offer = bids[-1]
             price = float(best_offer[0])
-        # result self._exchange._api.sell(self._name, amount, price, option)
-        return {u'orderNumber': u'77875861209', u'resultingTrades': [{u'tradeID': u'3070199', u'rate': u'0.03370000', u'amount': u'0.00588054', u'date': u'2017-03-03 09:33:48', u'total': u'0.00019817', u'type': u'buy'}]}
+        btc = amount * price
+        if self._dry_run:
+            btc = add_fee(btc)
+            amount = add_fee(amount)
+            date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            return {u'orderNumber': u'{}'.format(int(time.time() * 1000)),
+                    u'resultingTrades': [
+                        {u'tradeID': u'{}'.format(int(time.time() * 1000)),
+                         u'rate': u'{}'.format(price),
+                         u'amount': u'{}'.format(amount),
+                         u'date': u'{}'.format(date),
+                         u'total': u'{}'.format(btc),
+                         u'type': u'sell'}]}
+        else:
+            raise NotImplementedError("Real trading is not yet activated.")
+            # result self._exchange._api.sell(self._name, amount, price, option)
 
 
 class BacktestMarket(Market):
@@ -219,7 +247,7 @@ class Exchange(object):
         return sorted(markets.items(),
                       key=lambda x: (float(x[1]["volume"]), float(x[1]["change"])), reverse=True)[0:limit]
 
-    def get_market(self, market, backtest=False):
+    def get_market(self, market, backtest=False, dry_run=False):
         raise NotImplementedError
 
     def resolution2seconds(self, resolution):
@@ -255,8 +283,8 @@ class Poloniex(Exchange):
         else:
             return self._api.balance()[currency]
 
-    def get_market(self, name, backtest=False):
+    def get_market(self, name, backtest=False, dry_run=False):
         if backtest:
             return BacktestMarket(self, name)
         else:
-            return Market(self, name)
+            return Market(self, name, dry_run)
