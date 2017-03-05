@@ -9,6 +9,22 @@ from .strategy import BUY, SELL, QUIT
 log = logging.getLogger(__name__)
 
 
+def replay_tradelog(trades):
+    btc = 0
+    amount = 0
+    for t in trades:
+        if t.order_type == "INIT":
+            btc = t.btc
+            amount = t.amount
+        elif t.order_type == "BUY":
+            btc -= t.btc
+            amount += t.amount
+        else:
+            btc += t.btc_taxed
+            amount -= t.amount
+    return btc, amount
+
+
 def init_db():
     Base.metadata.create_all(engine)
 
@@ -16,17 +32,28 @@ def init_db():
 def get_bot(market, strategy, resolution, timeframe, btc):
     try:
         bot = db.query(Cointrader).filter(Cointrader.market == market._name).one()
+        log.info("Loading bot {} {}".format(bot.market, bot.id))
         bot._market = market
         bot.strategy = str(strategy)
         bot._strategy = strategy
         bot._resolution = resolution
         bot._timeframe = timeframe
+        db.commit()
+        btc, amount = replay_tradelog(bot.trades)
+        log.info("Loaded state from trade log: {} BTC {} COINS".format(btc, amount))
+        bot.btc = btc
+        bot.amount = amount
     except sa.orm.exc.NoResultFound:
         bot = Cointrader(market, strategy, resolution, timeframe)
+        log.info("Creating new bot {}".format(bot.market))
         if btc is None:
             balances = market._exchange.get_balance()
             btc = balances["BTC"]["quantity"]
-        bot.set_btc(btc)
+        bot.btc = btc
+        chart = market.get_chart(resolution, timeframe)
+        rate = chart._data[-1]["close"]
+        trade = Trade(datetime.datetime.now(), "INIT", 0, 0, market._name, 0, rate, btc, btc)
+        bot.trades.append(trade)
         db.add(bot)
     db.commit()
     return bot
@@ -76,8 +103,10 @@ class Trade(Base):
         self.btc_taxed = btc_taxed
         if self.order_type == "BUY":
             log.info("{}: BUY {} @ {} paid -> {} BTC".format(self.date, self.amount, self.rate, self.btc_taxed))
-        else:
+        elif self.order_type == "SELL":
             log.info("{}: SELL {} @ {} earned -> {} BTC".format(self.date, self.amount, self.rate, self.btc_taxed))
+        else:
+            log.info("{}: INIT {} BTC {} COINS".format(self.date, self.btc, self.amount))
 
 
 class Cointrader(Base):
