@@ -76,14 +76,15 @@ def balance(ctx):
 
 @click.command()
 @click.argument("market")
-@click.argument("btc", type=float)
 @click.option("--resolution", help="Resolution of the chart which is used for trend analysis", default="30m", type=click.Choice(Poloniex.resolutions.keys()))
 @click.option("--timeframe", help="Timeframe of the chart which is used for trend analysis", default="1d", type=click.Choice(Poloniex.timeframes.keys()))
 @click.option("--automatic", help="Start cointrader in automatic mode.", is_flag=True)
 @click.option("--backtest", help="Just backtest the strategy on the chart.", is_flag=True)
 @click.option("--dry-run", help="Just simulate the trading.", is_flag=True)
+@click.option("--btc", help="Set initial amount of BTC the bot will use for trading.", type=float)
+@click.option("--coins", help="Set initial amount of coint the bot will use for trading.", type=float)
 @pass_context
-def start(ctx, btc, market, resolution, timeframe, automatic, backtest, dry_run):
+def start(ctx, market, resolution, timeframe, automatic, backtest, dry_run, btc, coins):
     """Start a new bot on the given market and the given amount of BTC"""
     market = ctx.exchange.get_market(market, backtest, dry_run)
     strategy = Followtrend()
@@ -94,7 +95,7 @@ def start(ctx, btc, market, resolution, timeframe, automatic, backtest, dry_run)
         interval = 0  # Wait 1 second until to the next signal
     else:
         interval = ctx.exchange.resolution2seconds(resolution)
-    bot = get_bot(market, strategy, resolution, timeframe, btc)
+    bot = get_bot(market, strategy, resolution, timeframe, btc, coins)
     bot.start(interval, backtest)
 
     stat = bot.stat(backtest)
