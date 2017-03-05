@@ -32,7 +32,7 @@ class Market(object):
 
     """Docstring for Market. """
 
-    def __init__(self, exchange, name, dry_run):
+    def __init__(self, exchange, name, dry_run=False):
         """TODO: to be defined1.
 
         :name: TODO
