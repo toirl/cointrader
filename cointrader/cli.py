@@ -94,15 +94,10 @@ def start(ctx, btc, market, resolution, timeframe, automatic, backtest, dry_run)
         interval = 0  # Wait 1 second until to the next signal
     else:
         interval = ctx.exchange.resolution2seconds(resolution)
-
     bot = get_bot(market, strategy, resolution, timeframe, btc)
-
-    start_btc = bot.btc
-    start_amount = bot.amount
-
     bot.start(interval, backtest)
 
-    stat = bot.stat(start_btc, start_amount, backtest)
+    stat = bot.stat(backtest)
 
     click.echo("")
     click.echo("=========")

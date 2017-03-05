@@ -178,31 +178,40 @@ class Cointrader(Base):
         self.btc = total_btc
         db.commit()
 
-    def stat(self, start_btc, start_amount, delete_trades=False):
+    def stat(self, delete_trades=False):
         """Returns a dictionary with some statistic of the performance of the bot."""
 
-        btc = start_btc
-        amount = start_amount
+        # Get chart data.
+        data = self._market.get_chart().data
+        market_end_rate = data[-1]["close"]
+
+        # Calculate performance of the bot.
+        start_amount = 0
+        start_btc = 0
         for trade in self.trades:
-            if trade.order_type == "BUY":
+            if trade.order_type == "INIT":
+                start_btc = trade.btc
+                start_amount = trade.amount
+                start_rate = trade.rate
+                start_date = trade.date
+                btc = start_btc
+                amount = start_amount
+            elif trade.order_type == "BUY":
                 amount += trade.amount
                 btc -= trade.btc
             else:
                 amount -= trade.amount
                 btc += trade.btc
-
-        data = self._market.get_chart().data
-        start_rate = self.trades[0].rate
-        end_rate = data[-1]["close"]
-
-        btc += amount * end_rate
+        # Finally calculate the value of remaining coins based on the
+        # curent rate on the market.
+        btc += amount * market_end_rate
 
         stat = {
-            "start": datetime.datetime.utcfromtimestamp(data[0]["date"]),
+            "start": start_date,
             "end": datetime.datetime.utcfromtimestamp(data[-1]["date"]),
-            "start_rate": data[0]["close"],
+            "start_rate": start_rate,
             "end_rate": data[-1]["close"],
-            "profit_chart": ((end_rate - start_rate) / start_rate) * 100,
+            "profit_chart": ((market_end_rate - start_rate) / start_rate) * 100,
             "start_btc": start_btc,
             "end_btc": btc,
             "profit_cointrader": ((btc - start_btc) / start_btc) * 100,
