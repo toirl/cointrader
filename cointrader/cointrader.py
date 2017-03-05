@@ -47,7 +47,7 @@ class Trade(Base):
     btc = sa.Column(sa.Float, nullable=False)
     btc_taxed = sa.Column(sa.Float, nullable=False)
 
-    def __init__(self, bot_id, date, order_type, order_id, trade_id, market, amount, rate, btc, btc_taxed):
+    def __init__(self, date, order_type, order_id, trade_id, market, amount, rate, btc, btc_taxed):
         """TODO: to be defined1.
 
         :bot_id: ID of the bot which initiated the trade
@@ -121,7 +121,7 @@ class Cointrader(Base):
             rate = t["rate"]
             btc = self.btc
             btc_taxed = t["total"]
-            trade = Trade(self.id, date, order_type, order_id, trade_id, self._market._name, amount, rate, btc, btc_taxed)
+            trade = Trade(date, order_type, order_id, trade_id, self._market._name, amount, rate, btc, btc_taxed)
             self.trades.append(trade)
 
         # Finally set the internal state of the bot. BTC will be 0 after
@@ -143,7 +143,7 @@ class Cointrader(Base):
             rate = t["rate"]
             btc_taxed = t["total"]
             total_btc += float(btc_taxed)
-            trade = Trade(self.id, date, order_type, order_id, trade_id, self._market._name, amount, rate, btc_taxed, btc_taxed)
+            trade = Trade(date, order_type, order_id, trade_id, self._market._name, amount, rate, btc_taxed, btc_taxed)
             self.trades.append(trade)
 
         # Finally set the internal state of the bot. Amount will be 0 after
