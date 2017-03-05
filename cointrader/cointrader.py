@@ -62,8 +62,10 @@ class Trade(Base):
         :btc_taxed: How many BTC are actually used in order after applying the tax
 
         """
-        self.bot_id = bot_id
-        self.date = datetime.datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+        if isinstance(date, unicode):
+            self.date = datetime.datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+        else:
+            self.date = date
         self.order_type = order_type
         self.order_id = order_id
         self.trade_id = trade_id
