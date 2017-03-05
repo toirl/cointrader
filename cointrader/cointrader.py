@@ -116,8 +116,6 @@ class Cointrader(Base):
     created = sa.Column(sa.DateTime, nullable=False, default=datetime.datetime.utcnow)
     active = sa.Column(sa.Boolean, nullable=False, default=True)
     market = sa.Column(sa.String, nullable=False)
-    amount = sa.Column(sa.Float, nullable=False, default=0)
-    btc = sa.Column(sa.Float, nullable=False, default=0)
     strategy = sa.Column(sa.String, nullable=False)
     trades = sa.orm.relationship("Trade")
 
@@ -134,10 +132,6 @@ class Cointrader(Base):
         self.amount = 0
         self.btc = 0
         # The bot has either btc to buy or amount of coins to sell.
-
-    def set_btc(self, btc):
-        self.btc = btc
-        db.commit()
 
     def _buy(self):
         result = self._market.buy(self.btc)
