@@ -43,6 +43,11 @@ class Market(object):
         self._dry_run = dry_run
 
     @property
+    def currency(self):
+        pair = self._name.split("_")
+        return pair[1]
+
+    @property
     def url(self):
         return "{}{}".format(self._exchange.url, self._name)
 
