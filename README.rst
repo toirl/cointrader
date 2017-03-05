@@ -30,6 +30,10 @@ trading.
 * Source: https://github.com/toirl/cointrader
 * Documentation: https://cointrader.readthedocs.io.
 
+If you like the program, I am looking forward to a donation :)
+
+* DASH: XypsuUMRTioV7bHSVzSDkNgihtr1gfiqAr
+* BTC : 1L5xtVirGVpDL7958SPaHb6p9dHZoaQ2Cz
 
 Features
 --------
@@ -37,7 +41,7 @@ Features
 * Explore exchange for interesting markets to trade on
 * Show your balances
 * Semiautomatic trading. Just emitting trading signals.
-* Backtest capabilities
+* Backtest capabilities, Drymode trading
 * Trade logbook
 * Profit/Loss analysis
 
