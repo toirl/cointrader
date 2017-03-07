@@ -38,12 +38,15 @@ If you like the program, I am looking forward to a donation :)
 Features
 --------
 
-* Explore exchange for interesting markets to trade on
-* Show your balances
-* Semiautomatic trading. Just emitting trading signals.
-* Backtest capabilities, Drymode trading
+* Automatic trading. Cointrader will buy and sell following emitted
+  trading signals.
+* Semiautomatic trading. Cointrader just emits trading signals. You finally
+  decide if you want to follow the signals.
 * Trade logbook
-* Profit/Loss analysis
+* Profit/Loss analysis (Bot vs. Market)
+* Backtesting. Check how good your strategy performs on historic charts.
+* Explore exchanges and find interesting markets to trade on
+* Show your balances
 
 Planned
 -------
@@ -53,7 +56,6 @@ Planned
  * Stop loss limits
  * Take profit limits
 
-* Full automatic trading
 * Pluggable external trading strategies
 * Support more exchanges
 
