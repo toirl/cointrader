@@ -65,7 +65,10 @@ class InteractivStrategyWrapper(object):
         chart = market.get_chart(resolution, timeframe)
         data = chart._data
 
-        last = data[-2]
+        if len(data) > 1:
+            last = data[-2]
+        else:
+            last = data[-1]
         current = data[-1]
 
         values = {}

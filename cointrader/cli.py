@@ -7,7 +7,7 @@ from .exchange import Poloniex
 from .cointrader import init_db, get_bot
 from .strategy import InteractivStrategyWrapper
 from .strategies.trend import Followtrend
-from .helpers import render_bot_statistic
+from .helpers import render_bot_statistic, render_bot_tradelog
 
 log = logging.getLogger(__name__)
 
@@ -98,10 +98,11 @@ def start(ctx, market, resolution, timeframe, automatic, backtest, dry_run, btc,
         interval = ctx.exchange.resolution2seconds(resolution)
     bot = get_bot(market, strategy, resolution, timeframe, btc, coins)
     bot.start(interval, backtest)
-    click.echo(render_bot_statistic(bot.stat(backtest)))
-
-    db.delete(bot)
-    db.commit()
+    if backtest:
+        click.echo(render_bot_tradelog(bot.trades))
+        click.echo(render_bot_statistic(bot.stat(backtest)))
+        db.delete(bot)
+        db.commit()
 
 
 @click.command()
