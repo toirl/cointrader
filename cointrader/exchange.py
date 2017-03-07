@@ -92,10 +92,9 @@ class Market(object):
                          u'total': u'{}'.format(btc),
                          u'type': u'buy'}]}
         else:
-            raise NotImplementedError("Real trading is not yet activated.")
-            # return  self._exchange._api.buy(self._name, amount, price, option)
+            return self._exchange._api.buy(self._name, amount, price, option)
 
-    def sell(self, amount, price=None):
+    def sell(self, amount, price=None, option=None):
         if price is None:
             # Get best price on market.
             orderbook = self._exchange._api.book(self._name)
@@ -115,8 +114,7 @@ class Market(object):
                          u'total': u'{}'.format(btc),
                          u'type': u'sell'}]}
         else:
-            raise NotImplementedError("Real trading is not yet activated.")
-            # result self._exchange._api.sell(self._name, amount, price, option)
+            return self._exchange._api.sell(self._name, amount, price, option)
 
 
 class BacktestMarket(Market):
