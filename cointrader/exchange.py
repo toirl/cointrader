@@ -76,7 +76,7 @@ class Market(object):
         if price is None:
             # Get best price on market.
             orderbook = self._exchange._api.book(self._name)
-            asks = orderbook["asks"]  # Asks in the meaning of "Who wants to buy my coins?"
+            asks = orderbook["asks"]   # Asks in the meaning of "I wand X for Y"
             best_offer = asks[-1]
             price = float(best_offer[0])
         amount = btc / price
@@ -99,7 +99,7 @@ class Market(object):
         if price is None:
             # Get best price on market.
             orderbook = self._exchange._api.book(self._name)
-            bids = orderbook["bids"]  # Asks in the meaning of "Who wants to buy my coins?"
+            bids = orderbook["bids"]  # Bids in the meaning of "I give you X for Y"
             best_offer = bids[-1]
             price = float(best_offer[0])
         btc = amount * price
