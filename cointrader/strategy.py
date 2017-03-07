@@ -3,6 +3,8 @@
 import click
 import logging
 import datetime
+from termcolor import colored
+from .helpers import render_bot_statistic, render_bot_tradelog
 
 log = logging.getLogger(__name__)
 
@@ -29,6 +31,10 @@ class Strategy(object):
     def __init__(self):
         self._signal_history = []
         """Store last emitted signals"""
+        self._bot = None
+
+    def set_bot(self, bot):
+        self._bot = bot
 
     def details(self, market, resolution, timeframe):
         """Will return details on the reasong why the signal was emited."""
@@ -44,30 +50,76 @@ class InteractivStrategyWrapper(object):
 
     def __init__(self, strategie):
         self._strategie = strategie
+        self._bot = None
+
+    def set_bot(self, bot):
+        self._bot = bot
 
     def __str__(self):
         return "Interavtiv: {}".format(self._strategie)
+
+    def _title(self, market, resolution, timeframe):
+
+        out = []
+
+        chart = market.get_chart(resolution, timeframe)
+        data = chart._data
+
+        last = data[-2]
+        current = data[-1]
+
+        values = {}
+        values["date"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if current["close"] > last["close"]:
+            values["rate"] = colored(current["close"], "green")
+        else:
+            values["rate"] = colored(current["close"], "red")
+        change_percent = (current["close"] - last["close"]) / current["close"] * 100
+
+        values["change_percent"] = round(change_percent, 4)
+        values["url"] = market.url
+        values["btc"] = self._bot.btc
+        values["amount"] = self._bot.amount
+        values["currency"] = market.currency
+        t = u"{date} [{btc} BTC {amount} {currency}] | {rate} ({change_percent}%) | {url}".format(**values)
+        out.append("=" * len(t))
+        out.append(t)
+        out.append("=" * len(t))
+
+        return "\n".join(out)
 
     def signal(self, market, resolution, timeframe):
         """Will return either a BUY, SELL or WAIT signal for the given
         market"""
 
         # Get current chart
+        click.echo(self._title(market, resolution, timeframe))
         signal = self._strategie.signal(market, resolution, timeframe)
 
-        click.echo('Date: {}'.format(datetime.datetime.now()))
-        click.echo('Url: {}'.format(market.url))
         click.echo('Signal: {}'.format(signal_map[signal]))
-        click.echo('What should I do? Press any key to continue')
-        click.echo('[b (buy), s (sell)], d (details), space (wait), q (quit)]')
+        click.echo('')
+        options = []
+        if self._bot.btc:
+            options.append("b) Buy")
+        if self._bot.amount:
+            options.append("s) Sell")
+        options.append("l) Tradelog")
+        options.append("p) Performance of bot")
+        options.append("q) Quit")
+        options.append("")
+        options.append("Press any key to continue")
+
+        click.echo(u'\n'.join(options))
         c = click.getchar()
-        if c == 'b':
+        if c == 'b' and self._bot.btc:
             return BUY
-        if c == 's':
+        if c == 's' and self._bot.amount:
             return SELL
-        if c == 'd':
-            click.echo(self._strategie.details(market, resolution, timeframe))
-            return self.signal(market, resolution, timeframe)
+        if c == 'l':
+            click.echo(render_bot_tradelog(self._bot.trades))
+        if c == 'p':
+            click.echo(render_bot_statistic(self._bot.stat()))
+            #click.echo(self._strategie.details(market, resolution, timeframe))
         if c == 'q':
             return QUIT
         else:

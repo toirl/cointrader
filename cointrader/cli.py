@@ -7,6 +7,7 @@ from .exchange import Poloniex
 from .cointrader import init_db, get_bot
 from .strategy import InteractivStrategyWrapper
 from .strategies.trend import Followtrend
+from .helpers import render_bot_statistic
 
 log = logging.getLogger(__name__)
 
@@ -97,25 +98,7 @@ def start(ctx, market, resolution, timeframe, automatic, backtest, dry_run, btc,
         interval = ctx.exchange.resolution2seconds(resolution)
     bot = get_bot(market, strategy, resolution, timeframe, btc, coins)
     bot.start(interval, backtest)
-
-    stat = bot.stat(backtest)
-
-    click.echo("")
-    click.echo("=========")
-    click.echo("Statistic")
-    click.echo("=========")
-    click.echo("Traded from {} until {}".format(stat["start"], stat["end"]))
-    click.echo("Started with {} BTC".format(stat["start_btc"]))
-    click.echo("Ended with {} BTC".format(stat["end_btc"]))
-    click.echo("Cointrader makes: {}%".format(round(stat["profit_cointrader"], 2)))
-    click.echo("Market makes: {}%".format(round(stat["profit_chart"], 2)))
-    click.echo("Trading started with a rate of {} BTC and ended at {} BTC".format(stat["start_rate"], stat["end_rate"]))
-    click.echo("")
-    if stat["profit_cointrader"] < stat["profit_chart"]:
-        click.echo("Your strategy was less profitable than the market :(")
-    elif stat["profit_cointrader"] < stat["start_btc"]:
-        click.echo("Your strategy has lost money :(")
-    click.echo("")
+    click.echo(render_bot_statistic(bot.stat(backtest)))
 
     db.delete(bot)
     db.commit()

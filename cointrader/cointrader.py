@@ -20,7 +20,7 @@ def replay_tradelog(trades):
             btc -= t.btc
             amount += t.amount
         else:
-            btc += t.btc_taxed
+            btc += t.btc
             amount -= t.amount
     return btc, amount
 
@@ -56,10 +56,11 @@ def get_bot(market, strategy, resolution, timeframe, btc, amount):
         bot.amount = amount
         chart = market.get_chart(resolution, timeframe)
         rate = chart._data[-1]["close"]
-        trade = Trade(datetime.datetime.now(), "INIT", 0, 0, market._name, 0, rate, btc, btc)
+        trade = Trade(datetime.datetime.utcnow(), "INIT", 0, 0, market._name, amount, rate, btc)
         bot.trades.append(trade)
         db.add(bot)
     db.commit()
+    strategy.set_bot(bot)
     return bot
 
 
@@ -76,9 +77,9 @@ class Trade(Base):
     amount = sa.Column(sa.Float, nullable=False)
     rate = sa.Column(sa.Float, nullable=False)
     btc = sa.Column(sa.Float, nullable=False)
-    btc_taxed = sa.Column(sa.Float, nullable=False)
+    value = sa.Column(sa.Float, nullable=False)
 
-    def __init__(self, date, order_type, order_id, trade_id, market, amount, rate, btc, btc_taxed):
+    def __init__(self, date, order_type, order_id, trade_id, market, amount, rate, btc):
         """TODO: to be defined1.
 
         :bot_id: ID of the bot which initiated the trade
@@ -86,11 +87,10 @@ class Trade(Base):
         :order_id: ID of the order
         :trade_id: ID of a single trade within the order
         :market: Currency_pair linke BTC_DASH
-        :amount: How many coins bought/sold in order
+        :amount: How many coins bought (including fee)/sold in order
         :rate: Rate for the order
         :order_type: Type of order. Can be either "BUY, SELL"
-        :btc: How many BTC you placed in order
-        :btc_taxed: How many BTC are actually used in order after applying the tax
+        :btc: How many BTC you placed in order/get (including fee) from order
 
         """
         if isinstance(date, unicode):
@@ -104,12 +104,15 @@ class Trade(Base):
         self.amount = amount
         self.rate = rate
         self.btc = btc
-        self.btc_taxed = btc_taxed
+        self.value = 0
         if self.order_type == "BUY":
-            log.info("{}: BUY {} @ {} paid -> {} BTC".format(self.date, self.amount, self.rate, self.btc_taxed))
+            self.value = float(amount) * float(rate)
+            log.info("{}: BUY {} @ {} paid -> {} BTC".format(self.date, self.amount, self.rate, self.btc))
         elif self.order_type == "SELL":
-            log.info("{}: SELL {} @ {} earned -> {} BTC".format(self.date, self.amount, self.rate, self.btc_taxed))
+            self.value = btc
+            log.info("{}: SELL {} @ {} earned -> {} BTC".format(self.date, self.amount, self.rate, self.btc))
         else:
+            self.value = float(btc) + (float(amount) * float(rate))
             log.info("{}: INIT {} BTC {} COINS".format(self.date, self.btc, self.amount))
 
 
@@ -148,9 +151,8 @@ class Cointrader(Base):
             amount = t["amount"]
             total_amount += float(amount)
             rate = t["rate"]
-            btc = self.btc
-            btc_taxed = t["total"]
-            trade = Trade(date, order_type, order_id, trade_id, self._market._name, amount, rate, btc, btc_taxed)
+            btc = t["total"]
+            trade = Trade(date, order_type, order_id, trade_id, self._market._name, amount, rate, btc)
             self.trades.append(trade)
 
         # Finally set the internal state of the bot. BTC will be 0 after
@@ -170,9 +172,9 @@ class Cointrader(Base):
             date = t["date"]
             amount = t["amount"]
             rate = t["rate"]
-            btc_taxed = t["total"]
-            total_btc += float(btc_taxed)
-            trade = Trade(date, order_type, order_id, trade_id, self._market._name, amount, rate, btc_taxed, btc_taxed)
+            btc = t["total"]
+            total_btc += float(btc)
+            trade = Trade(date, order_type, order_id, trade_id, self._market._name, amount, rate, btc)
             self.trades.append(trade)
 
         # Finally set the internal state of the bot. Amount will be 0 after
@@ -189,26 +191,12 @@ class Cointrader(Base):
         data = self._market.get_chart().data
         market_end_rate = data[-1]["close"]
 
-        # Calculate performance of the bot.
-        start_amount = 0
-        start_btc = 0
         for trade in self.trades:
+            value = trade.value
             if trade.order_type == "INIT":
-                start_btc = trade.btc
-                start_amount = trade.amount
                 start_rate = trade.rate
                 start_date = trade.date
-                btc = start_btc
-                amount = start_amount
-            elif trade.order_type == "BUY":
-                amount += trade.amount
-                btc -= trade.btc
-            else:
-                amount -= trade.amount
-                btc += trade.btc
-        # Finally calculate the value of remaining coins based on the
-        # curent rate on the market.
-        btc += amount * market_end_rate
+                start_value = trade.value
 
         stat = {
             "start": start_date,
@@ -216,9 +204,9 @@ class Cointrader(Base):
             "start_rate": start_rate,
             "end_rate": data[-1]["close"],
             "profit_chart": ((market_end_rate - start_rate) / start_rate) * 100,
-            "start_btc": start_btc,
-            "end_btc": btc,
-            "profit_cointrader": ((btc - start_btc) / start_btc) * 100,
+            "start_value": start_value,
+            "end_value": value,
+            "profit_cointrader": ((value - start_value) / (start_value or 1) * 100),
         }
         if delete_trades:
             for trade in self.trades:

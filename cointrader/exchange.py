@@ -81,7 +81,6 @@ class Market(object):
             price = float(best_offer[0])
         amount = btc / price
         if self._dry_run:
-            btc = add_fee(btc)
             amount = add_fee(amount)
             date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             return {u'orderNumber': u'{}'.format(int(time.time() * 1000)),
@@ -106,7 +105,6 @@ class Market(object):
         btc = amount * price
         if self._dry_run:
             btc = add_fee(btc)
-            amount = add_fee(amount)
             date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             return {u'orderNumber': u'{}'.format(int(time.time() * 1000)),
                     u'resultingTrades': [
