@@ -112,14 +112,18 @@ class InteractivStrategyWrapper(object):
         click.echo(u'\n'.join(options))
         c = click.getchar()
         if c == 'b' and self._bot.btc:
-            return BUY
+            # btc = click.prompt('BTC', default=self._bot.btc)
+            if click.confirm('Buy for {} btc?'.format(self._bot.btc)):
+                return BUY
         if c == 's' and self._bot.amount:
-            return SELL
+            # amount = click.prompt('Amount', default=self._bot.amount)
+            if click.confirm('Sell {}?'.format(self._bot.amount)):
+                return SELL
         if c == 'l':
             click.echo(render_bot_tradelog(self._bot.trades))
         if c == 'p':
             click.echo(render_bot_statistic(self._bot.stat()))
-            #click.echo(self._strategie.details(market, resolution, timeframe))
+            # click.echo(self._strategie.details(market, resolution, timeframe))
         if c == 'q':
             return QUIT
         else:
