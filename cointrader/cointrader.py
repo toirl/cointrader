@@ -5,6 +5,7 @@ import logging
 import sqlalchemy as sa
 from . import Base, engine, db
 from .strategy import BUY, SELL, QUIT
+from .exchange import BacktestMarket
 
 log = logging.getLogger(__name__)
 
@@ -56,7 +57,14 @@ def get_bot(market, strategy, resolution, timeframe, btc, amount):
         bot.amount = amount
         chart = market.get_chart(resolution, timeframe)
         rate = chart._data[-1]["close"]
-        trade = Trade(datetime.datetime.utcnow(), "INIT", 0, 0, market._name, amount, rate, btc)
+        date = datetime.datetime.utcnow()
+
+        # If we have a "backtest" market that set the start of trading
+        # to the first date in chart.
+        if isinstance(market, BacktestMarket):
+            date = datetime.datetime.utcfromtimestamp(chart._data[0]["date"])
+
+        trade = Trade(date, "INIT", 0, 0, market._name, amount, rate, btc)
         bot.trades.append(trade)
         db.add(bot)
     db.commit()
@@ -93,7 +101,7 @@ class Trade(Base):
         :btc: How many BTC you placed in order/get (including fee) from order
 
         """
-        if isinstance(date, unicode):
+        if not isinstance(date, datetime.datetime):
             self.date = datetime.datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
         else:
             self.date = date
@@ -190,6 +198,7 @@ class Cointrader(Base):
         # Get chart data.
         data = self._market.get_chart().data
         market_end_rate = data[-1]["close"]
+        market_start_rate = data[0]["close"]
 
         for trade in self.trades:
             value = trade.value
@@ -203,7 +212,7 @@ class Cointrader(Base):
             "end": datetime.datetime.utcfromtimestamp(data[-1]["date"]),
             "start_rate": start_rate,
             "end_rate": data[-1]["close"],
-            "profit_chart": ((market_end_rate - start_rate) / start_rate) * 100,
+            "profit_chart": ((market_end_rate - market_start_rate) / market_end_rate) * 100,
             "start_value": start_value,
             "end_value": value,
             "profit_cointrader": ((value - start_value) / (start_value or 1) * 100),
