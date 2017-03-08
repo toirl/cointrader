@@ -193,7 +193,16 @@ class Cointrader(Base):
         db.commit()
 
     def stat(self, delete_trades=False):
-        """Returns a dictionary with some statistic of the performance of the bot."""
+        """Returns a dictionary with some statistic of the performance of the bot.
+        Performance means how good cointrader performs in comparison to
+        the market movement. Market movement is measured by looking at
+        the start- and end rate of the chart.
+
+        The performance of cointrader is measured by looking at the
+        start and end value of the trade. These values are also
+        multiplied with the start and end rate. So if cointrader does
+        some good decisions and increases eater btc or amount of coins
+        of the bot the performance should be better."""
 
         # Get chart data.
         data = self._market.get_chart().data
@@ -201,11 +210,11 @@ class Cointrader(Base):
         market_start_rate = data[0]["close"]
 
         for trade in self.trades:
-            value = trade.value
+            value = trade.value * market_end_rate
             if trade.order_type == "INIT":
                 start_rate = trade.rate
                 start_date = trade.date
-                start_value = trade.value
+                start_value = trade.value * market_start_rate
 
         stat = {
             "start": start_date,
