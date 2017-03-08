@@ -43,7 +43,6 @@ def render_bot_title(bot, market, resolution, timeframe):
     return "\n".join(out)
 
 
-
 def render_bot_statistic(stat):
     out = [["", stat["start"], stat["end"], "CHANGE %"]]
     out.append(["COINTRADER VALUE", stat["start_value"], stat["end_value"], "{}".format(colorize_value(round(stat["profit_cointrader"], 2)))])
