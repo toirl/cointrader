@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 import click
 import logging
-import datetime
-from termcolor import colored
-from .helpers import render_bot_statistic, render_bot_tradelog
+from .helpers import render_bot_statistic, render_bot_tradelog, render_bot_title
 
 log = logging.getLogger(__name__)
 
@@ -58,45 +56,12 @@ class InteractivStrategyWrapper(object):
     def __str__(self):
         return "Interavtiv: {}".format(self._strategie)
 
-    def _title(self, market, resolution, timeframe):
-
-        out = []
-
-        chart = market.get_chart(resolution, timeframe)
-        data = chart._data
-
-        if len(data) > 1:
-            last = data[-2]
-        else:
-            last = data[-1]
-        current = data[-1]
-
-        values = {}
-        values["date"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        if current["close"] > last["close"]:
-            values["rate"] = colored(current["close"], "green")
-        else:
-            values["rate"] = colored(current["close"], "red")
-        change_percent = (current["close"] - last["close"]) / current["close"] * 100
-
-        values["change_percent"] = round(change_percent, 4)
-        values["url"] = market.url
-        values["btc"] = self._bot.btc
-        values["amount"] = self._bot.amount
-        values["currency"] = market.currency
-        t = u"{date} [{btc} BTC {amount} {currency}] | {rate} ({change_percent}%) | {url}".format(**values)
-        out.append("=" * len(t))
-        out.append(t)
-        out.append("=" * len(t))
-
-        return "\n".join(out)
-
     def signal(self, market, resolution, timeframe):
         """Will return either a BUY, SELL or WAIT signal for the given
         market"""
 
         # Get current chart
-        click.echo(self._title(market, resolution, timeframe))
+        click.echo(render_bot_title(self._bot, market, resolution, timeframe))
         signal = self._strategie.signal(market, resolution, timeframe)
 
         click.echo('Signal: {}'.format(signal_map[signal]))
