@@ -42,6 +42,7 @@ Features
   trading signals.
 * Semiautomatic trading. Cointrader just emits trading signals. You finally
   decide if you want to follow the signals.
+* Paper trading. Just simlate trading. Do not actually place real orders.
 * Trade logbook
 * Profit/Loss analysis (Bot vs. Market)
 * Backtesting. Check how good your strategy performs on historic charts.
