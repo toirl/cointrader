@@ -31,7 +31,7 @@ class Api(object):
     def volume(self, currency=None):
         raise NotImplementedError()
 
-    def chart(self, currency, period=1800, timeframe=None):
+    def chart(self, currency, period=1800):
         raise NotImplementedError()
 
     def book(self, currency):
@@ -176,7 +176,7 @@ class Poloniex(Api):
         r = requests.get("https://poloniex.com/public", params=params)
         return json.loads(r.content)
 
-    def chart(self, currency, period=1800, timeframe=None):
+    def chart(self, currency, period=1800, start=None, end=None):
         """
         Returns candlestick chart data. Required GET parameters are
         "currencyPair", "period" (candlestick period in seconds; valid
@@ -201,11 +201,28 @@ class Poloniex(Api):
 
         https://poloniex.com/public?command=returnChartData&currencyPair=BTC_XMR&start=1405699200&end=9999999999&period=14400
         """
-        end = datetime.datetime.now()
-        if timeframe is None:
-            start = end - datetime.timedelta(seconds=3600 * 24)
-        else:
-            start = end - datetime.timedelta(seconds=timeframe)
+
+        # Calculate start and end of the chart data depending on the
+        # selected resolution. We must set the start of the chart wide
+        # enough into the past to get sufficient data to calculte at
+        # least SMA, EMA and other derived indicators.  On default we
+        # are building
+        #     * SMA of the last 10 trades
+        #     * EMA 1/2 of the laste 10/20 trades
+        # So with default value we need at least 20 trades to build a
+        # good moving
+        MIN_TICKS = 20
+        if end is None:
+            end = datetime.datetime.now()
+        if start is None:
+            start = end - datetime.timedelta(seconds=period * MIN_TICKS)
+
+        # check if the timeframe is large enough to calculate SMA and
+        # EMA
+        td = end - start
+        ticks = td.total_seconds() / period
+        if ticks < MIN_TICKS:
+            start = start - datetime.timedelta(seconds=period * (20 - ticks))
 
         ts_end = totimestamp(end)
         ts_start = totimestamp(start)

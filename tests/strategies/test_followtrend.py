@@ -15,7 +15,7 @@ def test_monoton_raising():
     from cointrader.strategies.trend import followtrend
     chart1 = [(0, 0), (0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6), (0, 7), (0, 8), (0, 9)]
     signal = followtrend(chart1)
-    assert signal == 0
+    assert signal.value == 0
 
 
 def test_monoton_falling():
@@ -25,7 +25,7 @@ def test_monoton_falling():
     chart1 = [(0, 0), (0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6), (0, 7), (0, 8), (0, 9)]
     chart1.reverse()
     signal = followtrend(chart1)
-    assert signal == 0
+    assert signal.value == 0
 
 
 def test_localmin_found():
@@ -35,7 +35,7 @@ def test_localmin_found():
     from cointrader.strategies.trend import followtrend
     chart = [(0, 9), (0, 8), (0, 5), (0, 4), (0, 3), (0, 2), (0, 1), (0, 2), (0, 4), (0, 5)]
     signal = followtrend(chart)
-    assert signal == 0
+    assert signal.value == 0
 
 
 def test_localmax_found():
@@ -45,7 +45,7 @@ def test_localmax_found():
     from cointrader.strategies.trend import followtrend
     chart = [(0, 1), (0, 2), (0, 5), (0, 7), (0, 8), (0, 7), (0, 6), (0, 5), (0, 4)]
     signal = followtrend(chart)
-    assert signal == 0
+    assert signal.value == 0
 
 
 def test_raising_correction():
@@ -55,7 +55,7 @@ def test_raising_correction():
     from cointrader.strategies.trend import followtrend
     chart = [(0, 1), (0, 2), (0, 5), (0, 4), (0, 3), (0, 4), (0, 3), (0, 4), (0, 3)]
     signal = followtrend(chart)
-    assert signal == 0
+    assert signal.value == 0
 
 
 def test_falling_correction():
@@ -65,7 +65,7 @@ def test_falling_correction():
     from cointrader.strategies.trend import followtrend
     chart = [(0, 9), (0, 7), (0, 5), (0, 1), (0, 2), (0, 3), (0, 6), (0, 2), (0, 3), (0, 2), (0, 3)]
     signal = followtrend(chart)
-    assert signal == 0
+    assert signal.value == 0
 
 
 def test_raising_buy_signal():
@@ -75,7 +75,7 @@ def test_raising_buy_signal():
     from cointrader.strategies.trend import followtrend
     chart = [(0, 1), (0, 2), (0, 5), (0, 4), (0, 3), (0, 4), (0, 3), (0, 4), (0, 3), (0, 5), (0, 6)]
     signal = followtrend(chart)
-    assert signal == 1
+    assert signal.value == 1
 
 
 def test_raising_sell_signal():
@@ -85,7 +85,7 @@ def test_raising_sell_signal():
     from cointrader.strategies.trend import followtrend
     chart = [(0, 7), (0, 3), (0, 5), (0, 4), (0, 3), (0, 4), (0, 3), (0, 4), (0, 3), (0, 3), (0, 2)]
     signal = followtrend(chart)
-    assert signal == -1
+    assert signal.value == -1
 
 
 def test_falling_buy_signal():
@@ -95,7 +95,7 @@ def test_falling_buy_signal():
     from cointrader.strategies.trend import followtrend
     chart = [(0, 9), (0, 8), (0, 5), (0, 6), (0, 7), (0, 6), (0, 5), (0, 6), (0, 1), (0, 0)]
     signal = followtrend(chart)
-    assert signal == -1
+    assert signal.value == -1
 
 
 def test_falling_sell_signal():
@@ -105,4 +105,4 @@ def test_falling_sell_signal():
     from cointrader.strategies.trend import followtrend
     chart = [(0, 9), (0, 8), (0, 5), (0, 6), (0, 7), (0, 6), (0, 5), (0, 5), (0, 4)]
     signal = followtrend(chart)
-    assert signal == -1
+    assert signal.value == -1

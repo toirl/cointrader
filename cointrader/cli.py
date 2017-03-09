@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import click
+import datetime
 import logging
 from . import db
 from .config import Config, get_path_to_config
@@ -78,14 +79,15 @@ def balance(ctx):
 @click.command()
 @click.argument("market")
 @click.option("--resolution", help="Resolution of the chart which is used for trend analysis", default="30m", type=click.Choice(Poloniex.resolutions.keys()))
-@click.option("--timeframe", help="Timeframe of the chart which is used for trend analysis", default="1d", type=click.Choice(Poloniex.timeframes.keys()))
+@click.option("--start", help="Datetime to begin trading", default=None)
+@click.option("--end", help="Datetime to end trading", default=None)
 @click.option("--automatic", help="Start cointrader in automatic mode.", is_flag=True)
 @click.option("--backtest", help="Just backtest the strategy on the chart.", is_flag=True)
 @click.option("--papertrade", help="Just simulate the trading.", is_flag=True)
 @click.option("--btc", help="Set initial amount of BTC the bot will use for trading.", type=float)
 @click.option("--coins", help="Set initial amount of coint the bot will use for trading.", type=float)
 @pass_context
-def start(ctx, market, resolution, timeframe, automatic, backtest, papertrade, btc, coins):
+def start(ctx, market, resolution, start, end, automatic, backtest, papertrade, btc, coins):
     """Start a new bot on the given market and the given amount of BTC"""
     market = ctx.exchange.get_market(market, backtest, papertrade)
     strategy = Followtrend()
@@ -93,10 +95,14 @@ def start(ctx, market, resolution, timeframe, automatic, backtest, papertrade, b
         interval = 0  # Disable waiting in interactive mode
         strategy = InteractivStrategyWrapper(strategy)
     elif backtest:
-        interval = 0  # Wait 1 second until to the next signal
+        interval = 0  # Disable waiting in backtest mode
     else:
         interval = ctx.exchange.resolution2seconds(resolution)
-    bot = get_bot(market, strategy, resolution, timeframe, btc, coins)
+    if start:
+        start = datetime.datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
+    if end:
+        end = datetime.datetime.strptime(end, "%Y-%m-%d %H:%M:%S")
+    bot = get_bot(market, strategy, resolution, start, end, btc, coins)
     bot.start(interval, backtest)
     if backtest:
         click.echo(render_bot_tradelog(bot.trades))

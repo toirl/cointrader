@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import datetime
-from ..strategy import Strategy, WAIT, SELL, BUY, signal_map
+from ..strategy import Strategy, Signal, WAIT, SELL, BUY, signal_map
 
 log = logging.getLogger(__name__)
 
@@ -13,12 +13,12 @@ class Followtrend(Strategy):
     def __init__(self):
         Strategy.__init__(self)
 
-    def details(self, market, resolution, timeframe):
+    def details(self, market, resolution):
         return "No details available :("
 
-    def signal(self, market, resolution, timeframe):
+    def signal(self, market, resolution, start, end):
         # Get current chart
-        chart = market.get_chart(resolution, timeframe)
+        chart = market.get_chart(resolution, start, end)
         closing = chart.values()
         signal = followtrend(closing)
         self._signal_history.append(signal)
@@ -95,4 +95,4 @@ def followtrend(data, sluggish=5):
                                                                                   v,
                                                                                   resistance,
                                                                                   support))
-    return signal
+    return Signal(signal, datetime.datetime.utcfromtimestamp(d))

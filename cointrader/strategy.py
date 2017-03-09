@@ -19,6 +19,13 @@ signal_map = {
 # Signals for strategies.
 
 
+class Signal(object):
+
+    def __init__(self, signal, date):
+        self.value = signal
+        self.date = date
+
+
 class Strategy(object):
 
     """Docstring for Strategy. """
@@ -34,11 +41,11 @@ class Strategy(object):
     def set_bot(self, bot):
         self._bot = bot
 
-    def details(self, market, resolution, timeframe):
+    def details(self, market, resolution):
         """Will return details on the reasong why the signal was emited."""
         raise NotImplementedError
 
-    def signal(self, market, resolution, timeframe):
+    def signal(self, market, resolution, start, end):
         """Will return either a BUY, SELL or WAIT signal for the given
         market"""
         raise NotImplementedError
@@ -56,15 +63,15 @@ class InteractivStrategyWrapper(object):
     def __str__(self):
         return "Interavtiv: {}".format(self._strategie)
 
-    def signal(self, market, resolution, timeframe):
+    def signal(self, market, resolution):
         """Will return either a BUY, SELL or WAIT signal for the given
         market"""
 
         # Get current chart
-        click.echo(render_bot_title(self._bot, market, resolution, timeframe))
-        signal = self._strategie.signal(market, resolution, timeframe)
+        click.echo(render_bot_title(self._bot, market, resolution))
+        signal = self._strategie.signal(market, resolution)
 
-        click.echo('Signal: {}'.format(signal_map[signal]))
+        click.echo('Signal: {}'.format(signal_map[signal.value]))
         click.echo('')
         options = []
         if self._bot.btc:
@@ -91,7 +98,7 @@ class InteractivStrategyWrapper(object):
             click.echo(render_bot_tradelog(self._bot.trades))
         if c == 'p':
             click.echo(render_bot_statistic(self._bot.stat()))
-            # click.echo(self._strategie.details(market, resolution, timeframe))
+            # click.echo(self._strategie.details(market, resolution))
         if c == 'q':
             return QUIT
         else:

@@ -30,7 +30,11 @@ def init_db():
     Base.metadata.create_all(engine)
 
 
-def get_bot(market, strategy, resolution, timeframe, btc, amount):
+def get_bot(market, strategy, resolution, start, end, btc, amount):
+    # if start is None:
+    #     start = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%s")
+    # if end is None:
+    #     end = datetime.datetime.now().strftime("%s")
     try:
         bot = db.query(Cointrader).filter(Cointrader.market == market._name).one()
         log.info("Loading bot {} {}".format(bot.market, bot.id))
@@ -38,14 +42,15 @@ def get_bot(market, strategy, resolution, timeframe, btc, amount):
         bot.strategy = str(strategy)
         bot._strategy = strategy
         bot._resolution = resolution
-        bot._timeframe = timeframe
+        bot._start = start
+        bot._end = end
         db.commit()
         btc, amount = replay_tradelog(bot.trades)
         log.info("Loaded state from trade log: {} BTC {} COINS".format(btc, amount))
         bot.btc = btc
         bot.amount = amount
     except sa.orm.exc.NoResultFound:
-        bot = Cointrader(market, strategy, resolution, timeframe)
+        bot = Cointrader(market, strategy, resolution, start, end)
         log.info("Creating new bot {}".format(bot.market))
         if btc is None:
             balances = market._exchange.get_balance()
@@ -55,7 +60,7 @@ def get_bot(market, strategy, resolution, timeframe, btc, amount):
             amount = balances[market.currency]["quantity"]
         bot.btc = btc
         bot.amount = amount
-        chart = market.get_chart(resolution, timeframe)
+        chart = market.get_chart(resolution, start, end)
         rate = chart._data[-1]["close"]
         date = datetime.datetime.utcnow()
 
@@ -134,7 +139,7 @@ class Cointrader(Base):
     strategy = sa.Column(sa.String, nullable=False)
     trades = sa.orm.relationship("Trade")
 
-    def __init__(self, market, strategy, resolution="30m", timeframe="1d"):
+    def __init__(self, market, strategy, resolution="30m", start=None, end=None):
 
         self.market = market._name
         self.strategy = str(strategy)
@@ -142,7 +147,8 @@ class Cointrader(Base):
         self._market = market
         self._strategy = strategy
         self._resolution = resolution
-        self._timeframe = timeframe
+        self._start = start
+        self._end = start
 
         self.amount = 0
         self.btc = 0
@@ -232,6 +238,9 @@ class Cointrader(Base):
             db.commit()
         return stat
 
+    def _in_time(self, date):
+        return self._start <= date <= self._end
+
     def start(self, interval=None, backtest=False):
         """Start the bot and begin trading with given amount of BTC.
 
@@ -256,12 +265,12 @@ class Cointrader(Base):
         if interval is None:
             interval = self._market._exchange.resolution2seconds(self._resolution)
         while 1:
-            signal = self._strategy.signal(self._market, self._resolution, self._timeframe)
-            if signal == BUY and self.btc:
+            signal = self._strategy.signal(self._market, self._resolution, self._start, self._end)
+            if signal.value == BUY and self.btc and self._in_time(signal.date):
                 self._buy()
-            elif signal == SELL and self.amount:
+            elif signal.value == SELL and self.amount and self._in_time(signal.date):
                 self._sell()
-            elif signal == QUIT:
+            elif signal.value == QUIT:
                 log.info("Bot stopped")
                 break
             if backtest:

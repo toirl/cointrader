@@ -51,13 +51,11 @@ class Market(object):
     def url(self):
         return "{}{}".format(self._exchange.url, self._name)
 
-    def _get_chart_data(self, resolution, timeframe):
-        return self._exchange._api.chart(self._name,
-                                         self._exchange.resolution2seconds(resolution),
-                                         self._exchange.timeframe2seconds(timeframe))
+    def _get_chart_data(self, resolution, start, end):
+        return self._exchange._api.chart(self._name, self._exchange.resolution2seconds(resolution), start, end)
 
-    def get_chart(self, resolution="30m", timeframe="1d"):
-        data = self._get_chart_data(resolution, timeframe)
+    def get_chart(self, resolution="30m", start=None, end=None):
+        data = self._get_chart_data(resolution, start, end)
         return Chart(data)
 
     def buy(self, btc, price=None, option=None):
@@ -138,9 +136,9 @@ class BacktestMarket(Market):
             return True
         return False
 
-    def get_chart(self, resolution="30m", timeframe="1d"):
+    def get_chart(self, resolution="30m", start=None, end=None):
         if self._chart_data is None:
-            self._chart_data = self._get_chart_data(resolution, timeframe)
+            self._chart_data = self._get_chart_data(resolution, start, end)
         return Chart(self._chart_data[0:self._backtest_tick])
 
     def buy(self, btc, price=None):
@@ -177,12 +175,6 @@ class Exchange(object):
     resolutions = {"5m": 5 * 60, "15m": 15 * 60,
                    "30m": 30 * 60, "1h": 60 * 60 * 1,
                    "2h": 60 * 60 * 2, "4h": 60 * 60 * 4, "24h": 60 * 60 * 24}
-    timeframes = {"5m": 5 * 60, "15m": 15 * 60, "30m": 30 * 60,
-                  "1h": 60 * 60, "2h": 60 * 60 * 2, "6h": 60 * 60 * 6,
-                  "12h": 60 * 60 * 12, "1d": 60 * 60 * 24,
-                  "2d": 60 * 60 * 24 * 2, "1w": 60 * 60 * 24 * 7,
-                  "1M": 60 * 60 * 24 * 31, "3M": 60 * 60 * 24 * 31 * 3,
-                  "1Y": 60 * 60 * 24 * 356}
 
     def __init__(self, config, api=None):
         """TODO: to be defined1. """
@@ -253,9 +245,6 @@ class Exchange(object):
 
     def resolution2seconds(self, resolution):
         return self.resolutions[resolution]
-
-    def timeframe2seconds(self, timeframe):
-        return self.timeframes[timeframe]
 
 
 class Poloniex(Exchange):

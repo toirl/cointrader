@@ -10,10 +10,10 @@ def colorize_value(value):
         return colored(value, "green")
 
 
-def render_bot_title(bot, market, resolution, timeframe):
+def render_bot_title(bot, market, resolution):
 
     out = ["\n"]
-    chart = market.get_chart(resolution, timeframe)
+    chart = market.get_chart(resolution)
     data = chart._data
 
     if len(data) > 1:

@@ -27,10 +27,15 @@ coins for trading for the new bot!** You can change this by using the `--btc` or
 use for trading.  **Tip:** You can use the :ref:`exchange_command` to
 calculate the amount of BTC from given dollar.
 
-With no further options cointrader will work on a chart of the last 24H in a
-resolution of 30min. The time frame can be changed by using the `--timeframe`
-option. See `--help` for more information. The resolution can be changed by
-using the `--resolution` option. See `--help` for more information.
+With no further options cointrader will work on a chart with a resolution of
+30min. The resolution can be changed by using the `--resolution` option. See
+`--help` for more information.
+
+You can set a timeframe to define the trading time of cointrader.
+A start and end of the timeframe can be set by using the `--start` and `--end`
+option which takes a datetime argument in the format "YYYY-MM-DD HH:MM:SS".
+On default cointrader will start to trade immediately and will trade until you
+stop cointrader.
 
 .. index::
    single: Backtest
