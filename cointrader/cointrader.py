@@ -205,6 +205,9 @@ class Cointrader(Base):
         some good decisions and increases eater btc or amount of coins
         of the bot the performance should be better."""
 
+        chart = self._market.get_chart(self._resolution, self._start, self._end).data[-1]
+        market_end_rate = chart["close"]
+        end_date = datetime.datetime.utcfromtimestamp(chart["date"])
         # Set start value
         for trade in self.trades:
             if trade.order_type == "INIT":
@@ -218,8 +221,6 @@ class Cointrader(Base):
         trader_end_btc = trader_start_btc
         trader_end_amount = trader_start_amount
         for trade in self.trades:
-            market_end_rate = trade.rate
-            end_date = trade.date
             if trade.order_type == "BUY":
                 trader_end_amount += trade.amount_taxed
                 trader_end_btc -= trade.btc
