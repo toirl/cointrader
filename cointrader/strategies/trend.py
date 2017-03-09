@@ -20,12 +20,35 @@ class Followtrend(Strategy):
         # Get current chart
         chart = market.get_chart(resolution, start, end)
         closing = chart.values()
-        signal = followtrend(closing)
+        signal = takeprofit(closing)
         self._signal_history.append(signal)
         return signal
 
 
-def followtrend(data, sluggish=5):
+def takeprofit(data, sluggish=1.5):
+    last = data[0][1]
+    signal = WAIT
+
+    for item in data:
+        d = item[0]
+        v = item[1]
+        change = (v - last) / last * 100
+        if change < 0 and change * -1 >= sluggish:
+            signal = SELL
+        elif change > 0 and change >= sluggish:
+            signal = BUY
+        else:
+            signal = WAIT
+        last = v
+
+    log.debug("{} signal @ {}: Value: {}, Change: {}".format(signal_map[signal],
+                                                             datetime.datetime.utcfromtimestamp(d),
+                                                             v,
+                                                             change))
+    return Signal(signal, datetime.datetime.utcfromtimestamp(d))
+
+
+def followtrend(data, sluggish=1.5):
     support = None
     resistance = None
     last = data[0][1]

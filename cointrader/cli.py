@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import click
+import sys
 import datetime
 import logging
 from . import db
@@ -91,19 +92,26 @@ def start(ctx, market, resolution, start, end, automatic, backtest, papertrade, 
     """Start a new bot on the given market and the given amount of BTC"""
     market = ctx.exchange.get_market(market, backtest, papertrade)
     strategy = Followtrend()
-    if not automatic:
-        interval = 0  # Disable waiting in interactive mode
-        strategy = InteractivStrategyWrapper(strategy)
-    elif backtest:
-        interval = 0  # Disable waiting in backtest mode
-    else:
-        interval = ctx.exchange.resolution2seconds(resolution)
+
     if start:
         start = datetime.datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
     if end:
         end = datetime.datetime.strptime(end, "%Y-%m-%d %H:%M:%S")
+
+    if not automatic:
+        interval = 0  # Disable waiting in interactive mode
+        strategy = InteractivStrategyWrapper(strategy)
+    elif backtest:
+        if start is None or end is None:
+            click.echo("Error! For backtests you must provide a timeframe by setting start and end!")
+            sys.exit(1)
+        interval = 0  # Disable waiting in backtest mode
+    else:
+        interval = ctx.exchange.resolution2seconds(resolution)
+
     bot = get_bot(market, strategy, resolution, start, end, btc, coins)
     bot.start(interval, backtest)
+
     if backtest:
         click.echo(render_bot_tradelog(bot.trades))
         click.echo(render_bot_statistic(bot.stat(backtest)))

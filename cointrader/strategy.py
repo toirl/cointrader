@@ -72,7 +72,7 @@ class InteractivStrategyWrapper(object):
         click.echo(render_bot_title(self._bot, market, resolution))
         signal = self._strategie.signal(market, resolution, start, end)
 
-        click.echo('Signal: {}'.format(signal_map[signal.value]))
+        click.echo('Signal: {} {}'.format(signal.date, signal_map[signal.value]))
         click.echo('')
         options = []
         if self._bot.btc:

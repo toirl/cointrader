@@ -5,7 +5,6 @@ import logging
 import sqlalchemy as sa
 from . import Base, engine, db
 from .strategy import BUY, SELL, QUIT
-from .exchange import BacktestMarket
 
 log = logging.getLogger(__name__)
 
@@ -31,10 +30,7 @@ def init_db():
 
 
 def get_bot(market, strategy, resolution, start, end, btc, amount):
-    # if start is None:
-    #     start = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%s")
-    # if end is None:
-    #     end = datetime.datetime.now().strftime("%s")
+
     try:
         bot = db.query(Cointrader).filter(Cointrader.market == market._name).one()
         log.info("Loading bot {} {}".format(bot.market, bot.id))
@@ -62,14 +58,11 @@ def get_bot(market, strategy, resolution, start, end, btc, amount):
         bot.amount = amount
         chart = market.get_chart(resolution, start, end)
         rate = chart._data[-1]["close"]
-        date = datetime.datetime.utcnow()
 
-        # If we have a "backtest" market that set the start of trading
-        # to the first date in chart.
-        if isinstance(market, BacktestMarket):
-            date = datetime.datetime.utcfromtimestamp(chart._data[0]["date"])
+        if start is None:
+            start = datetime.datetime.utcnow()
 
-        trade = Trade(date, "INIT", 0, 0, market._name, amount, rate, btc)
+        trade = Trade(start, "INIT", 0, 0, market._name, rate, amount, 0, btc, 0)
         bot.trades.append(trade)
         db.add(bot)
     db.commit()
@@ -78,7 +71,7 @@ def get_bot(market, strategy, resolution, start, end, btc, amount):
 
 
 class Trade(Base):
-    """Trading log"""
+    """All trades of cointrader are saved in the database. A trade can either be a BUY or SELL."""
     __tablename__ = "trades"
     id = sa.Column(sa.Integer, primary_key=True)
     bot_id = sa.Column(sa.Integer, sa.ForeignKey('bots.id'))
@@ -87,23 +80,27 @@ class Trade(Base):
     order_id = sa.Column(sa.Integer, nullable=False)
     trade_id = sa.Column(sa.Integer, nullable=False)
     market = sa.Column(sa.String, nullable=False)
-    amount = sa.Column(sa.Float, nullable=False)
     rate = sa.Column(sa.Float, nullable=False)
-    btc = sa.Column(sa.Float, nullable=False)
-    value = sa.Column(sa.Float, nullable=False)
 
-    def __init__(self, date, order_type, order_id, trade_id, market, amount, rate, btc):
-        """TODO: to be defined1.
+    amount = sa.Column(sa.Float, nullable=False)
+    amount_taxed = sa.Column(sa.Float, nullable=False)
+    btc = sa.Column(sa.Float, nullable=False)
+    btc_taxed = sa.Column(sa.Float, nullable=False)
+
+    def __init__(self, date, order_type, order_id, trade_id, market, rate, amount, amount_taxed, btc, btc_taxed):
+        """Initialize a new trade log entry.
 
         :bot_id: ID of the bot which initiated the trade
         :date: Date of the order
         :order_id: ID of the order
+        :order_type: Type of order. Can be either "BUY, SELL"
         :trade_id: ID of a single trade within the order
         :market: Currency_pair linke BTC_DASH
-        :amount: How many coins bought (including fee)/sold in order
         :rate: Rate for the order
-        :order_type: Type of order. Can be either "BUY, SELL"
-        :btc: How many BTC you placed in order/get (including fee) from order
+        :amount: How many coins sold
+        :amount_taxed: How many coins bought (including fee) order
+        :btc: How many payed on buy
+        :btc_taxed: How many BTC get (including fee) from sell
 
         """
         if not isinstance(date, datetime.datetime):
@@ -114,18 +111,16 @@ class Trade(Base):
         self.order_id = order_id
         self.trade_id = trade_id
         self.market = market
-        self.amount = amount
         self.rate = rate
+        self.amount = amount
+        self.amount_taxed = amount_taxed
         self.btc = btc
-        self.value = 0
+        self.btc_taxed = btc_taxed
         if self.order_type == "BUY":
-            self.value = float(amount) * float(rate)
-            log.info("{}: BUY {} @ {} paid -> {} BTC".format(self.date, self.amount, self.rate, self.btc))
+            log.info("{}: BUY {} @ {} paid -> {} BTC".format(self.date, self.amount_taxed, self.rate, self.btc))
         elif self.order_type == "SELL":
-            self.value = btc
-            log.info("{}: SELL {} @ {} earned -> {} BTC".format(self.date, self.amount, self.rate, self.btc))
+            log.info("{}: SELL {} @ {} earned -> {} BTC".format(self.date, self.amount, self.rate, self.btc_taxed))
         else:
-            self.value = float(btc) + (float(amount) * float(rate))
             log.info("{}: INIT {} BTC {} COINS".format(self.date, self.btc, self.amount))
 
 
@@ -148,7 +143,7 @@ class Cointrader(Base):
         self._strategy = strategy
         self._resolution = resolution
         self._start = start
-        self._end = start
+        self._end = end
 
         self.amount = 0
         self.btc = 0
@@ -166,7 +161,7 @@ class Cointrader(Base):
             total_amount += float(amount)
             rate = t["rate"]
             btc = t["total"]
-            trade = Trade(date, order_type, order_id, trade_id, self._market._name, amount, rate, btc)
+            trade = Trade(date, order_type, order_id, trade_id, self._market._name, rate, 0, amount, self.btc, btc)
             self.trades.append(trade)
 
         # Finally set the internal state of the bot. BTC will be 0 after
@@ -188,7 +183,7 @@ class Cointrader(Base):
             rate = t["rate"]
             btc = t["total"]
             total_btc += float(btc)
-            trade = Trade(date, order_type, order_id, trade_id, self._market._name, amount, rate, btc)
+            trade = Trade(date, order_type, order_id, trade_id, self._market._name, rate, self.amount, amount, 0, btc)
             self.trades.append(trade)
 
         # Finally set the internal state of the bot. Amount will be 0 after
@@ -210,27 +205,44 @@ class Cointrader(Base):
         some good decisions and increases eater btc or amount of coins
         of the bot the performance should be better."""
 
-        # Get chart data.
-        data = self._market.get_chart().data
-        market_end_rate = data[-1]["close"]
-        market_start_rate = data[0]["close"]
-
+        # Set start value
         for trade in self.trades:
-            value = trade.value * market_end_rate
             if trade.order_type == "INIT":
-                start_rate = trade.rate
                 start_date = trade.date
-                start_value = trade.value * market_start_rate
+                market_start_rate = trade.rate
+                trader_start_btc = trade.btc
+                trader_start_amount = trade.amount
+                market_start_btc = trade.btc
+                market_start_amount = trade.amount
+
+        trader_end_btc = trader_start_btc
+        trader_end_amount = trader_start_amount
+        for trade in self.trades:
+            market_end_rate = trade.rate
+            end_date = trade.date
+            if trade.order_type == "BUY":
+                trader_end_amount += trade.amount_taxed
+                trader_end_btc -= trade.btc
+            elif trade.order_type == "SELL":
+                trader_end_btc += trade.btc_taxed
+                trader_end_amount -= trade.amount
+
+        trader_start_value = trader_start_btc + trader_start_amount * market_start_rate
+        market_start_value = trader_start_value
+        trader_end_value = trader_end_btc + trader_end_amount * market_end_rate
+        market_end_value = market_start_btc + market_start_amount * market_end_rate
+        trader_profit = trader_end_value - trader_start_value
+        market_profit = market_end_value - market_start_value
 
         stat = {
             "start": start_date,
-            "end": datetime.datetime.utcfromtimestamp(data[-1]["date"]),
-            "start_rate": start_rate,
-            "end_rate": data[-1]["close"],
-            "profit_chart": ((market_end_rate - market_start_rate) / market_end_rate) * 100,
-            "start_value": start_value,
-            "end_value": value,
-            "profit_cointrader": ((value - start_value) / (start_value or 1) * 100),
+            "end": end_date,
+            "market_start_value": market_start_value,
+            "market_end_value": market_end_value,
+            "profit_chart": market_profit / market_end_value * 100,
+            "trader_start_value": trader_start_value,
+            "trader_end_value": trader_end_value,
+            "profit_cointrader": trader_profit / trader_end_value * 100,
         }
         if delete_trades:
             for trade in self.trades:
@@ -239,7 +251,7 @@ class Cointrader(Base):
         return stat
 
     def _in_time(self, date):
-        return self._start <= date <= self._end
+        return (self._start is None or self._start <= date) and (self._end is None or date <= self._end)
 
     def start(self, interval=None, backtest=False):
         """Start the bot and begin trading with given amount of BTC.
