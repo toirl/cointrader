@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import datetime
 import click
 import logging
 from .helpers import render_bot_statistic, render_bot_tradelog, render_bot_title
@@ -63,13 +64,13 @@ class InteractivStrategyWrapper(object):
     def __str__(self):
         return "Interavtiv: {}".format(self._strategie)
 
-    def signal(self, market, resolution):
+    def signal(self, market, resolution, start, end):
         """Will return either a BUY, SELL or WAIT signal for the given
         market"""
 
         # Get current chart
         click.echo(render_bot_title(self._bot, market, resolution))
-        signal = self._strategie.signal(market, resolution)
+        signal = self._strategie.signal(market, resolution, start, end)
 
         click.echo('Signal: {}'.format(signal_map[signal.value]))
         click.echo('')
@@ -89,17 +90,17 @@ class InteractivStrategyWrapper(object):
         if c == 'b' and self._bot.btc:
             # btc = click.prompt('BTC', default=self._bot.btc)
             if click.confirm('Buy for {} btc?'.format(self._bot.btc)):
-                return BUY
+                return Signal(BUY, datetime.datetime.utcnow())
         if c == 's' and self._bot.amount:
             # amount = click.prompt('Amount', default=self._bot.amount)
             if click.confirm('Sell {}?'.format(self._bot.amount)):
-                return SELL
+                return Signal(SELL, datetime.datetime.utcnow())
         if c == 'l':
             click.echo(render_bot_tradelog(self._bot.trades))
         if c == 'p':
             click.echo(render_bot_statistic(self._bot.stat()))
             # click.echo(self._strategie.details(market, resolution))
         if c == 'q':
-            return QUIT
+            return Signal(QUIT, datetime.datetime.utcnow())
         else:
-            return WAIT
+            return Signal(WAIT, datetime.datetime.utcnow())
