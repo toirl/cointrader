@@ -213,7 +213,7 @@ class Poloniex(Api):
         # good moving
         MIN_TICKS = 20
         if end is None:
-            end = datetime.datetime.now()
+            end = datetime.datetime.utcnow()
         if start is None:
             start = end - datetime.timedelta(seconds=period * MIN_TICKS)
 
