@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import setup
+from setuptools import setup, find_packages
+
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -11,6 +12,7 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'Click>=6.0',
+    'requests',
     'sqlalchemy',
     'stockstats',
     'termcolor',
@@ -30,11 +32,7 @@ setup(
     author="Torsten Irländer",
     author_email='torsten.irlaender@googlemail.com',
     url='https://github.com/toirl/cointrader',
-    packages=[
-        'cointrader',
-    ],
-    package_dir={'cointrader':
-                 'cointrader'},
+    packages=find_packages(),
     entry_points={
         'console_scripts': [
             'cointrader=cointrader.cli:main'

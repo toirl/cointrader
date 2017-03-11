@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 import datetime
 import time
-from .exchanges.poloniex import Poloniex as PoloniexApi
-from .chart import Chart
+from cointrader.exchanges.poloniex import Poloniex as PoloniexApi
+from cointrader.chart import Chart
 
 
 def get_market_name(market):

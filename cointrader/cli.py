@@ -3,13 +3,13 @@ import click
 import sys
 import datetime
 import logging
-from . import db
-from .config import Config, get_path_to_config
-from .exchange import Poloniex
-from .cointrader import init_db, get_bot
-from .strategy import InteractivStrategyWrapper
-from .strategies.trend import Followtrend
-from .helpers import render_bot_statistic, render_bot_tradelog
+from cointrader import db
+from cointrader.config import Config, get_path_to_config
+from cointrader.exchange import Poloniex
+from cointrader.bot import init_db, get_bot
+from cointrader.strategy import InteractivStrategyWrapper
+from cointrader.strategies.trend import Followtrend
+from cointrader.helpers import render_bot_statistic, render_bot_tradelog
 
 log = logging.getLogger(__name__)
 

@@ -3,8 +3,8 @@ import datetime
 import time
 import logging
 import sqlalchemy as sa
-from . import Base, engine, db
-from .strategy import BUY, SELL, QUIT
+from cointrader import Base, engine, db
+from cointrader.strategy import BUY, SELL, QUIT
 
 log = logging.getLogger(__name__)
 

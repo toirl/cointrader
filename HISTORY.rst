@@ -7,6 +7,15 @@ History
 * Enabled Trading in dry mode
 * Added Tradelog
 
+0.3.1 (2017-03-11)
+------------------
+Bugfix release.
+
+* Fixed issue #4 (https://github.com/toirl/cointrader/issues/4)
+  - Use absolute imports.
+  - Renamed contrader modul into bot to prevent namespace issues.
+  - Added missing requirement of the 'requests' package.
+
 0.3.0 (2017-03-02)
 ------------------
 * Added backtest functionality. Cointrader can simulate trading in
