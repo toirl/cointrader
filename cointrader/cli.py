@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import click
 import logging
-from .config import Config, get_path_to_config
-from .exchange import Poloniex
-from .cointrader import Cointrader
-from .strategy import InteractivStrategyWrapper
-from .strategies.trend import Followtrend
+from cointrader.config import Config, get_path_to_config
+from cointrader.exchange import Poloniex
+from cointrader.bot import Cointrader
+from cointrader.strategy import InteractivStrategyWrapper
+from cointrader.strategies.trend import Followtrend
 
 log = logging.getLogger(__name__)
 

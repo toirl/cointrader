@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from .exchanges.poloniex import Poloniex as PoloniexApi
-from .chart import Chart
+from cointrader.exchanges.poloniex import Poloniex as PoloniexApi
+from cointrader.chart import Chart
 
 CASH = {"0.01$": 0.01, "0.1$": 0.1, "1$": 1, "2$": 2, "5$": 5, "10$": 10, "25$": 25, "50$": 25}
 

@@ -2,8 +2,8 @@
 import datetime
 import time
 import logging
-from . import Base, sa
-from .strategy import BUY, SELL, WAIT
+from cointrader import Base, sa
+from cointrader.strategy import BUY, SELL, WAIT
 
 log = logging.getLogger(__name__)
 

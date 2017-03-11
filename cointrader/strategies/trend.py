@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import datetime
-from ..strategy import Strategy, WAIT, SELL, BUY, signal_map
+from cointrader.strategy import Strategy, WAIT, SELL, BUY, signal_map
 
 log = logging.getLogger(__name__)
 
