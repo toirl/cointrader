@@ -25,7 +25,23 @@ Cointrader is Python based CLI trading application for crypto currencies on
 the Poloniex_ exchange.  Cointrader can be used for semiautomatic guided
 trading.
 
-* Status: Alpha
+.. danger::
+
+        You could loose money. Use cointrader at your own risk! I do not
+        accept any responsibility for any losses.
+
+        Cointrader is Alpha quality! Cointrader is in a early development
+        phase. Expect all all aspects of the application to change in the
+        future. Cointrader is not roundly tested. It's default trading
+        strategy currently performs worse than the market in in most
+        situations.
+
+        If you want to help cointrader the best Free Software trading bot your
+        contribution is highly appreciated! Find details on how to participate
+        in the `documentation <http://cointrader.readthedocs.io/en/latest/contributing.html>`_.
+
+
+* Status: **Alpha**
 * Free software: MIT license
 * Source: https://github.com/toirl/cointrader
 * Documentation: https://cointrader.readthedocs.io.
