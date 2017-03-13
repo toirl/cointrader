@@ -58,3 +58,7 @@ class Chart(object):
     def macdh(self):
         macdh = self._stock.get("macdh")
         return macdh.tolist()
+
+    def sma(self, window=10):
+        sma = self._stock.get("close_{}_sma".format(window))
+        return sma.tolist()
