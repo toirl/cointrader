@@ -52,11 +52,50 @@ class Market(object):
         return "{}{}".format(self._exchange.url, self._name)
 
     def _get_chart_data(self, resolution, start, end):
-        return self._exchange._api.chart(self._name, self._exchange.resolution2seconds(resolution), start, end)
+        period = self._exchange.resolution2seconds(resolution)
+        internal_start = start
+        # Calculate internal start date of the chart. The internal start
+        # date is used to ensure that the chart contains enough data to
+        # compute indicators like SMA or EMA. On default we excpect at
+        # least 120 data points in the chart to be present.
+        MIN_POINTS = 120
+
+        # 1. First check if the timeframe is already large enough to
+        # calculate the indicators.
+        td = end - internal_start
+        ticks = td.total_seconds() / period
+        offset = 0
+        if ticks < MIN_POINTS:
+            # Not enough data points. We need to set the start date back
+            # in the past.
+            offset = MIN_POINTS - ticks
+            internal_start = internal_start - datetime.timedelta(seconds=period * offset)
+
+        return self._exchange._api.chart(self._name, internal_start, end, period), int(offset)
 
     def get_chart(self, resolution="30m", start=None, end=None):
-        data = self._get_chart_data(resolution, start, end)
-        return Chart(data)
+        """Will return a chart of the market. On default the chart will
+        have a resolution of 30m. It will include the last recent data
+        of the market on default. You can optionally define a different
+        timeframe by providing a start and end point. On default the
+        start and end of the chart will be the time of requesting the
+        chart data.
+
+        The start and end date are used to get the start and end rate of
+        the market for later profit calculations.
+
+        :resolution: Resolution of the chart (Default 30m)
+        :start: Start of the chart data (Default Now)
+        :end: End of the chart data (Default Now)
+        :returns: Chart instance.
+        """
+        if end is None:
+            end = datetime.datetime.utcnow()
+        if start is None:
+            start = datetime.datetime.utcnow()
+
+        data, offset = self._get_chart_data(resolution, start, end)
+        return Chart(data, start, end)
 
     def buy(self, btc, price=None, option=None):
         """Will buy coins on the market for the given amount of BTC. On
@@ -138,8 +177,9 @@ class BacktestMarket(Market):
 
     def get_chart(self, resolution="30m", start=None, end=None):
         if self._chart_data is None:
-            self._chart_data = self._get_chart_data(resolution, start, end)
-        return Chart(self._chart_data[0:self._backtest_tick])
+            self._chart_data, offset = self._get_chart_data(resolution, start, end)
+            self._backtest_tick += offset
+        return Chart(self._chart_data[0:self._backtest_tick], start, end)
 
     def buy(self, btc, price=None):
         price = float(self._chart_data[0:self._backtest_tick][-1]['close'])

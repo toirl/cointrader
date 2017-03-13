@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import io
 import pandas
+import datetime
 from stockstats import StockDataFrame
 
 
@@ -16,22 +17,40 @@ def chart2csv(chart):
     return u"\n".join(out)
 
 
-class Chart(object):
+def search_chartdata_by_date(data, dt, le=True):
+    ts = (dt - datetime.datetime(1970, 1, 1)).total_seconds()
+    chart_item = data[0]
+    for d in data:
+        if d["date"] <= ts:
+            chart_item = d
+        else:
+            break
+    return chart_item
 
+
+class Chart(object):
     """Docstring for Chart. """
 
-    def __init__(self, data):
+    def __init__(self, data, start, end):
         """TODO: to be defined1.
 
         :data: TODO
 
         """
         self._data = data
+        self._start = start
+        self._end = end
         self._stock = StockDataFrame.retype(pandas.read_csv(io.StringIO(chart2csv(data))))
 
     @property
     def data(self):
         return self._data
+
+    def get_first_point(self):
+        return search_chartdata_by_date(self.data, self._start)
+
+    def get_last_point(self):
+        return search_chartdata_by_date(self.data, self._end)
 
     def values(self, which="close"):
         return [(v["date"], v[which]) for v in self._data]

@@ -57,12 +57,10 @@ def get_bot(market, strategy, resolution, start, end, btc, amount):
         bot.btc = btc
         bot.amount = amount
         chart = market.get_chart(resolution, start, end)
-        rate = chart._data[-1]["close"]
+        rate = chart.get_first_point()["close"]
+        date = datetime.datetime.utcfromtimestamp(chart.get_first_point()["date"])
 
-        if start is None:
-            start = datetime.datetime.utcnow()
-
-        trade = Trade(start, "INIT", 0, 0, market._name, rate, amount, 0, btc, 0)
+        trade = Trade(date, "INIT", 0, 0, market._name, rate, amount, 0, btc, 0)
         bot.trades.append(trade)
         db.add(bot)
     db.commit()
@@ -205,14 +203,19 @@ class Cointrader(Base):
         some good decisions and increases eater btc or amount of coins
         of the bot the performance should be better."""
 
-        chart = self._market.get_chart(self._resolution, self._start, self._end).data[-1]
-        market_end_rate = chart["close"]
-        end_date = datetime.datetime.utcfromtimestamp(chart["date"])
+        chart = self._market.get_chart(self._resolution, self._start, self._end)
+
+        first = chart.get_first_point()
+        market_start_rate = first["close"]
+        start_date = datetime.datetime.utcfromtimestamp(first["date"])
+
+        last = chart.get_last_point()
+        market_end_rate = last["close"]
+        end_date = datetime.datetime.utcfromtimestamp(last["date"])
+
         # Set start value
         for trade in self.trades:
             if trade.order_type == "INIT":
-                start_date = trade.date
-                market_start_rate = trade.rate
                 trader_start_btc = trade.btc
                 trader_start_amount = trade.amount
                 market_start_btc = trade.btc
