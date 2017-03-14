@@ -3,11 +3,11 @@ import click
 import sys
 import datetime
 import logging
-from cointrader import db
+from cointrader import db, STRATEGIES
 from cointrader.config import Config, get_path_to_config
 from cointrader.exchange import Poloniex
 from cointrader.bot import init_db, get_bot
-from cointrader.strategy import InteractivStrategyWrapper, NullStrategy
+from cointrader.strategy import InteractivStrategyWrapper
 from cointrader.helpers import render_bot_statistic, render_bot_tradelog
 
 log = logging.getLogger(__name__)
@@ -78,19 +78,20 @@ def balance(ctx):
 
 @click.command()
 @click.argument("market")
-@click.option("--resolution", help="Resolution of the chart which is used for trend analysis", default="30m", type=click.Choice(Poloniex.resolutions.keys()))
+@click.option("--resolution", help="Resolution of the chart which is used for trend analysis", default="30m")
 @click.option("--start", help="Datetime to begin trading", default=None)
 @click.option("--end", help="Datetime to end trading", default=None)
 @click.option("--automatic", help="Start cointrader in automatic mode.", is_flag=True)
 @click.option("--backtest", help="Just backtest the strategy on the chart.", is_flag=True)
 @click.option("--papertrade", help="Just simulate the trading.", is_flag=True)
+@click.option("--strategy", help="Stratgegy used for trading.", default="Wait", type=click.Choice(STRATEGIES.keys()))
 @click.option("--btc", help="Set initial amount of BTC the bot will use for trading.", type=float)
 @click.option("--coins", help="Set initial amount of coint the bot will use for trading.", type=float)
 @pass_context
-def start(ctx, market, resolution, start, end, automatic, backtest, papertrade, btc, coins):
+def start(ctx, market, resolution, start, end, automatic, backtest, papertrade, strategy, btc, coins):
     """Start a new bot on the given market and the given amount of BTC"""
     market = ctx.exchange.get_market(market, backtest, papertrade)
-    strategy = NullStrategy()
+    strategy = STRATEGIES[strategy]()
 
     if start:
         start = datetime.datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
