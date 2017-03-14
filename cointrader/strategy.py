@@ -81,6 +81,7 @@ class InteractivStrategyWrapper(object):
             options.append("s) Sell")
         options.append("l) Tradelog")
         options.append("p) Performance of bot")
+        options.append("d) Show details on signal")
         options.append("q) Quit")
         options.append("")
         options.append("Press any key to continue")
@@ -99,7 +100,8 @@ class InteractivStrategyWrapper(object):
             click.echo(render_bot_tradelog(self._bot.trades))
         if c == 'p':
             click.echo(render_bot_statistic(self._bot.stat()))
-            # click.echo(self._strategie.details(market, resolution))
+        if c == 'd':
+            click.echo(self._strategie.details(market, resolution))
         if c == 'q':
             return Signal(QUIT, datetime.datetime.utcnow())
         else:
