@@ -7,8 +7,7 @@ from cointrader import db
 from cointrader.config import Config, get_path_to_config
 from cointrader.exchange import Poloniex
 from cointrader.bot import init_db, get_bot
-from cointrader.strategy import InteractivStrategyWrapper
-from cointrader.strategies.trend import Followtrend
+from cointrader.strategy import InteractivStrategyWrapper, NullStrategy
 from cointrader.helpers import render_bot_statistic, render_bot_tradelog
 
 log = logging.getLogger(__name__)
@@ -91,7 +90,7 @@ def balance(ctx):
 def start(ctx, market, resolution, start, end, automatic, backtest, papertrade, btc, coins):
     """Start a new bot on the given market and the given amount of BTC"""
     market = ctx.exchange.get_market(market, backtest, papertrade)
-    strategy = Followtrend()
+    strategy = NullStrategy()
 
     if start:
         start = datetime.datetime.strptime(start, "%Y-%m-%d %H:%M:%S")

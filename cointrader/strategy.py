@@ -52,6 +52,18 @@ class Strategy(object):
         raise NotImplementedError
 
 
+class NullStrategy(Strategy):
+
+    def details(self, market, resolution):
+        """Will return details on the reasong why the signal was emited."""
+        return "I am doing nothing but waiting..."
+
+    def signal(self, market, resolution, start, end):
+        """Will return either a BUY, SELL or WAIT signal for the given
+        market"""
+        return Signal(WAIT, datetime.datetime.utcnow())
+
+
 class InteractivStrategyWrapper(object):
 
     def __init__(self, strategie):
