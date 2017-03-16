@@ -30,11 +30,10 @@ trading.
         You could loose money. Use cointrader at your own risk! I do not
         accept any responsibility for any losses.
 
-        Cointrader is Alpha quality! Cointrader is in a early development
-        phase. Expect all all aspects of the application to change in the
-        future. Cointrader is not roundly tested. It's default trading
-        strategy currently performs worse than the market in in most
-        situations.
+        Cointrader is Alpha quality! It is not meant to be used for serious
+        trading yet. It is still in a early development phase and has a bunch
+        full of known defects. Expect all all aspects of the application to
+        change in the future. Cointrader is not roundly tested.
 
         If you want to help cointrader the best Free Software trading bot your
         contribution is highly appreciated! Find details on how to participate
