@@ -2,8 +2,8 @@
 History
 =======
 
-0.4.0 (not yet released)
-------------------------
+0.4.0 (2017-03-16)
+------------------
 First version with real trading functionality. However **cointrader has no
 working trading strategy yet**. So the default strategy will do nothing than
 waiting :). However you can use the interactive mode to buy and sell coins if
