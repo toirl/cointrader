@@ -15,21 +15,26 @@ valid currency pair as argument and the start amount of BTC to the start
 command. Please not that the naming of the currency pair is depended on the
 configured exchange.::
 
-        contrader start BTC_DASH
+        cointrader start BTC_DASH
 
 Cointrader will try to load a previously created bot for the given market from
 the database and build the current state of the bot from the trade log. If no
 bot can be loaded a new bot will be created. 
 
-**On default cointrader will use use the complete available amount of BTC and
-coins for trading for the new bot!** You can change this by using the `--btc` or
-`--amount` parameter to set the initial amount of BTC and coins the bot will
-use for trading.  **Tip:** You can use the :ref:`exchange_command` to
-calculate the amount of BTC from given dollar.
+You can restrict the amount of coins and BTC the bot will use on trading by
+setting the `--btc` or `--coins` parameter. This will set the the initial
+amount of BTC and coins the bot will use for trading.  **Tip:** You can use
+the :ref:`exchange_command` to calculate the amount of BTC from given dollar.
+
+.. warning::
+
+        On default cointrader will use use the complete available amount of BTC and
+        coins for trading for the new bot! Make sure you restrict the amount
+        of coins and BTC the bot will use for trading!
+
 
 With no further options cointrader will work on a chart with a resolution of
-30min. The resolution can be changed by using the `--resolution` option. See
-`--help` for more information.
+30min. The resolution can be changed by using the `--resolution` option. 
 
 You can set a timeframe to define the trading time of cointrader.
 A start and end of the timeframe can be set by using the `--start` and `--end`
@@ -38,16 +43,35 @@ On default cointrader will start to trade immediately and will trade until you
 stop cointrader.
 
 .. index::
+   single: Strategy
+
+Cointrader use different trading strategies. You can choose which strategy to
+use by setting the `--strategy` option. On default cointrader will use a very
+defensive "Wait-Strategy" which will only emit "Wait" signals. So no buys or
+sells a replaced.
+
+.. note::
+
+        Cointrader currently has no working trading strategy. It is the
+        current objectiv of the defvelopment to come up with a working
+        profitable strategy.
+
+
+.. index::
    single: Backtest
 
 Trading can be done in backtest mode. To start trading in backtest
 mode set the `--backtest` flag. See :ref:`backtest` for more details.
 
 .. index::
-   single: Dryrun
+   single: Papertrading 
 
-Cointrader can simulate trading by set the `dry-run` flag. In this mode
-cointrader will place no real orders on the market.
+Paper Trade
+^^^^^^^^^^^
+A paper trade is a simulated trade. Cointrader can simlate buying and selling
+coins without actual involiving real money. This is great to test you trading
+strategy without any risk.
+To start cointrader in paper trade mode you must set the `--papertrade` flag.
 
 .. index::
    single: interactive trading

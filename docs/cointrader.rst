@@ -12,6 +12,14 @@ Subpackages
 Submodules
 ----------
 
+cointrader.bot module
+---------------------
+
+.. automodule:: cointrader.bot
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 cointrader.chart module
 -----------------------
 
@@ -28,14 +36,6 @@ cointrader.cli module
     :undoc-members:
     :show-inheritance:
 
-cointrader.cointrader module
-----------------------------
-
-.. automodule:: cointrader.cointrader
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 cointrader.config module
 ------------------------
 
@@ -48,6 +48,14 @@ cointrader.exchange module
 --------------------------
 
 .. automodule:: cointrader.exchange
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cointrader.helpers module
+-------------------------
+
+.. automodule:: cointrader.helpers
     :members:
     :undoc-members:
     :show-inheritance:
