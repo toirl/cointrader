@@ -4,8 +4,16 @@ History
 
 0.4.0 (not yet released)
 ------------------------
-* Enabled Trading in dry mode
-* Added Tradelog
+First version with real trading functionality. However **cointrader has no
+working trading strategy yet**. So the default strategy will do nothing than
+waiting :). However you can use the interactive mode to buy and sell coins if
+you want to.
+
+* Added automatic trading. Cointrader will follow the emitted signals from the
+  strategy.
+* Added Papertrading. Do trading without any risk. Cointrader will simulate
+  trading.
+* Added Tradelog.
 
 0.3.1 (2017-03-11)
 ------------------
@@ -31,7 +39,7 @@ Bugfix release.
 ------------------
 
 * Improved "Usage" documentation
-* Changed format of confiuration file from JSON to standard python
+* Changed format of configuration file from JSON to standard python
   configuration file (.ini)
 * Added "balance" command
 * Added "explore" command
