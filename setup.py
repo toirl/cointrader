@@ -42,7 +42,7 @@ setup(
     install_requires=requirements,
     license="MIT license",
     zip_safe=False,
-    keywords='cointrader',
+    keywords='cointrader coins crypto currency trading bot exchange poloniex bitcoin dash digital cash',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
