@@ -13,16 +13,18 @@ class Followtrend(Strategy):
     def __init__(self):
         Strategy.__init__(self)
 
-    def details(self, market, resolution):
-        return "No details available :("
-
     def signal(self, market, resolution, start, end):
         # Get current chart
         chart = market.get_chart(resolution, start, end)
         closing = chart.values()
-        signal = takeprofit(closing)
-        self._signal_history.append(signal)
-        return signal
+
+        self._value = closing[-1][1]
+        self._date = datetime.datetime.utcfromtimestamp(closing[-1][0])
+
+        # sma_signal = self.sma(chart)
+        # ema_signal = self.ema(chart)
+        macdh_signal = self.macdh(chart)
+        return macdh_signal
 
 
 def takeprofit(data, sluggish=1.5):
