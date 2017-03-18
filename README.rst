@@ -67,13 +67,11 @@ Features
 Planned
 -------
 
-* Risk- and Money management
-
- * Stop loss limits
- * Take profit limits
-
-* Pluggable external trading strategies
+* Implement a working trading strategy!
 * Support more exchanges
+* Pluggable external trading strategies
+* Risk- and Money management, Stop loss limits, Take profit limits
+
 
 Motivation
 ----------
