@@ -59,19 +59,8 @@ class Market(object):
         # compute indicators like SMA or EMA. On default we excpect at
         # least 120 data points in the chart to be present.
         MIN_POINTS = 120
-
-        # 1. First check if the timeframe is already large enough to
-        # calculate the indicators.
-        td = end - internal_start
-        ticks = td.total_seconds() / period
-        offset = 0
-        if ticks < MIN_POINTS:
-            # Not enough data points. We need to set the start date back
-            # in the past.
-            offset = MIN_POINTS - ticks
-            internal_start = internal_start - datetime.timedelta(seconds=period * offset)
-
-        return self._exchange._api.chart(self._name, internal_start, end, period), int(offset)
+        internal_start = internal_start - datetime.timedelta(seconds=period * MIN_POINTS)
+        return self._exchange._api.chart(self._name, internal_start, end, period), int(MIN_POINTS)
 
     def get_chart(self, resolution="30m", start=None, end=None):
         """Will return a chart of the market. On default the chart will
