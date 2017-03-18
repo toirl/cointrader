@@ -38,13 +38,21 @@ class Strategy(object):
         self._signal_history = []
         """Store last emitted signals"""
         self._bot = None
-
-    def set_bot(self, bot):
-        self._bot = bot
+        self._value = None
+        """Current closing value of the market"""
+        self._date = None
+        """Current date of of the value. Needed for signal generation"""
+        self._details = {}
+        """Dictionary with details on the signal(s)
+        {"indicator": {"signal": 1, "details": Foo}}
+        """
 
     def details(self, market, resolution):
         """Will return details on the reasong why the signal was emited."""
-        raise NotImplementedError
+        return self._details
+
+    def set_bot(self, bot):
+        self._bot = bot
 
     def signal(self, market, resolution, start, end):
         """Will return either a BUY, SELL or WAIT signal for the given
