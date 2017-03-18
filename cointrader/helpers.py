@@ -10,6 +10,14 @@ def colorize_value(value):
         return colored(value, "green")
 
 
+def render_signal_details(details):
+    out = [["Indicator", "Signal", "Details"]]
+    for d in details:
+        out.append([d, colorize_value(details[d]["signal"]), details[d]["details"]])
+    table = AsciiTable(out).table
+    return "\n".join(["\nSignal:", table])
+
+
 def render_bot_title(bot, market, resolution):
 
     out = ["\n"]
