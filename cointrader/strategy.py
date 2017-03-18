@@ -3,7 +3,7 @@
 import datetime
 import click
 import logging
-from .helpers import render_bot_statistic, render_bot_tradelog, render_bot_title
+from .helpers import render_bot_statistic, render_bot_tradelog, render_bot_title, render_signal_details
 
 log = logging.getLogger(__name__)
 
@@ -51,6 +51,59 @@ class Strategy(object):
         market"""
         raise NotImplementedError
 
+    def sma(self, chart, sma1=5, sma2=20):
+        """Generates a trade signal based on two moving averanges with
+        different width. A BUY signal is generated if the shorter SMA1
+        crosses the longer SMA2 in up direction and the SMA1 is higher
+        than the closing price. A SELL signal is emited if the SMA1
+        crosses the SMA2 from above and is lower than the closing
+        price."""
+
+        sma_1 = chart.sma(sma1)[-1]
+        sma_2 = chart.sma(sma2)[-1]
+        signal = WAIT
+
+        if self._value > sma_1 and sma_1 > sma_2:
+            signal = BUY
+        elif self._value < sma_1 and sma_1 < sma_2:
+            signal = SELL
+        self._details["SMA"] = {"signal": signal, "details": "SMA{}: {}, SMA{}: {})".format(sma1, sma_1, sma2, sma_2)}
+        return Signal(signal, self._date)
+
+    def ema(self, chart, ema1=5, ema2=20):
+        """Generates a trade signal based on two moving averanges with
+        different width. A BUY signal is generated if the shorter SMA1
+        crosses the longer SMA2 in up direction and the SMA1 is higher
+        than the closing price. A SELL signal is emited if the SMA1
+        crosses the SMA2 from above and is lower than the closing
+        price."""
+
+        ema_1 = chart.ema(ema1)[-1]
+        ema_2 = chart.ema(ema2)[-1]
+        signal = WAIT
+
+        if self._value > ema_1 and ema_1 > ema_2:
+            signal = BUY
+        elif self._value < ema_1 and ema_1 < ema_2:
+            signal = SELL
+        self._details["EMA"] = {"signal": signal, "details": "EMA{}: {}, EMA{}: {})".format(ema1, ema_1, ema2, ema_2)}
+        return Signal(signal, self._date)
+
+    def macdh(self, chart):
+        """Generates a SELL signal as soon as the macdh value changes
+        from positve value into negativ value. It generates a BUY signal
+        if the value from negativ to positiv."""
+
+        macdh = chart.macdh()[::-1][0:2]
+        if macdh[0] < 0 and macdh[1] > 0:
+            signal = SELL
+        elif macdh[0] > 0 and macdh[1] < 0:
+            signal = BUY
+        else:
+            signal = WAIT
+        self._details["MACDH"] = {"signal": signal, "details": "MACDH: {}".format(macdh)}
+        return Signal(signal, self._date)
+
 
 class NullStrategy(Strategy):
 
@@ -85,6 +138,7 @@ class InteractivStrategyWrapper(object):
         signal = self._strategie.signal(market, resolution, start, end)
 
         click.echo('Signal: {} {}'.format(signal.date, signal_map[signal.value]))
+        click.echo(render_signal_details(self._strategie.details(market, resolution)))
         click.echo('')
         options = []
         if self._bot.btc:
@@ -113,7 +167,7 @@ class InteractivStrategyWrapper(object):
         if c == 'p':
             click.echo(render_bot_statistic(self._bot.stat()))
         if c == 'd':
-            click.echo(self._strategie.details(market, resolution))
+            click.echo(render_signal_details(self._strategie.details(market, resolution)))
         if c == 'q':
             return Signal(QUIT, datetime.datetime.utcnow())
         else:

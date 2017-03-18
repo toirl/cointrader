@@ -62,3 +62,7 @@ class Chart(object):
     def sma(self, window=10):
         sma = self._stock.get("close_{}_sma".format(window))
         return sma.tolist()
+
+    def ema(self, window=10):
+        ema = self._stock.get("close_{}_ema".format(window))
+        return ema.tolist()
