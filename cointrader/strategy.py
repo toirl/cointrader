@@ -117,12 +117,14 @@ class NullStrategy(Strategy):
 
     def details(self, market, resolution):
         """Will return details on the reasong why the signal was emited."""
-        return "I am doing nothing but waiting..."
+        return {}
 
     def signal(self, market, resolution, start, end):
         """Will return either a BUY, SELL or WAIT signal for the given
         market"""
-        return Signal(WAIT, datetime.datetime.utcnow())
+        signal = Signal(WAIT, datetime.datetime.utcnow())
+        self._details["WAIT"] = {"signal": signal, "details": "I am just waiting"}
+        return signal
 
 
 class InteractivStrategyWrapper(object):
