@@ -59,42 +59,55 @@ class Strategy(object):
         market"""
         raise NotImplementedError
 
-    def sma(self, chart, sma1=5, sma2=20):
-        """Generates a trade signal based on two moving averanges with
-        different width. A BUY signal is generated if the shorter SMA1
-        crosses the longer SMA2 in up direction and the SMA1 is higher
-        than the closing price. A SELL signal is emited if the SMA1
-        crosses the SMA2 from above and is lower than the closing
+    def sma(self, chart, window=12):
+        """Generates a trade signal based on a moving averanges. A BUY
+        signal is generated if the EMA higher than the closing price. A
+        SELL signal is emited if the EMA is lower than the closing
         price."""
 
-        sma_1 = chart.sma(sma1)[-1]
-        sma_2 = chart.sma(sma2)[-1]
+        sma = chart.sma(window)[-1]
         signal = WAIT
 
-        if self._value > sma_1 and sma_1 > sma_2:
+        if self._value > sma:
             signal = BUY
-        elif self._value < sma_1 and sma_1 < sma_2:
+        elif self._value < sma:
             signal = SELL
-        self._details["SMA"] = {"signal": signal, "details": "SMA{}: {}, SMA{}: {})".format(sma1, sma_1, sma2, sma_2)}
+        self._details["SMA"] = {"signal": signal, "details": "SMA{}: {})".format(window, sma)}
         return Signal(signal, self._date)
 
-    def ema(self, chart, ema1=5, ema2=20):
-        """Generates a trade signal based on two moving averanges with
-        different width. A BUY signal is generated if the shorter SMA1
-        crosses the longer SMA2 in up direction and the SMA1 is higher
-        than the closing price. A SELL signal is emited if the SMA1
-        crosses the SMA2 from above and is lower than the closing
+    def ema(self, chart, window=12):
+        """Generates a trade signal based on a moving averanges. A BUY
+        signal is generated if the EMA higher than the closing price. A
+        SELL signal is emited if the EMA is lower than the closing
         price."""
 
-        ema_1 = chart.ema(ema1)[-1]
-        ema_2 = chart.ema(ema2)[-1]
+        ema = chart.ema(window)[-1]
+        signal = WAIT
+
+        if self._value > ema:
+            signal = BUY
+        elif self._value < ema:
+            signal = SELL
+        self._details["EMA"] = {"signal": signal, "details": "EMA{}: {})".format(window, ema)}
+        return Signal(signal, self._date)
+
+    def double_cross(self, chart, fast=12, slow=26):
+        """Generates a trade signal based on two moving averanges with
+        different width. A BUY signal is generated if the faster EMA
+        crosses the slower EMA in up direction and the faster EMA is higher
+        than the closing price. A SELL signal is emited if the faster SMA
+        crosses the lower from above and is lower than the closing
+        price."""
+
+        ema_1 = chart.ema(fast)[-1]
+        ema_2 = chart.ema(slow)[-1]
         signal = WAIT
 
         if self._value > ema_1 and ema_1 > ema_2:
             signal = BUY
         elif self._value < ema_1 and ema_1 < ema_2:
             signal = SELL
-        self._details["EMA"] = {"signal": signal, "details": "EMA{}: {}, EMA{}: {})".format(ema1, ema_1, ema2, ema_2)}
+        self._details["EMA"] = {"signal": signal, "details": "EMA{}: {}, EMA{}: {})".format(fast, ema_1, slow, ema_2)}
         return Signal(signal, self._date)
 
     def macdh(self, chart):
