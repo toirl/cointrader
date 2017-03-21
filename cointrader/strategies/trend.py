@@ -12,6 +12,7 @@ class Followtrend(Strategy):
 
     def __init__(self):
         Strategy.__init__(self)
+        self._macd = WAIT
 
     def signal(self, market, resolution, start, end):
         # Get current chart
@@ -21,10 +22,25 @@ class Followtrend(Strategy):
         self._value = closing[-1][1]
         self._date = datetime.datetime.utcfromtimestamp(closing[-1][0])
 
-        # sma_signal = self.sma(chart)
-        # ema_signal = self.ema(chart)
+        # MACDH is an early indicator for trend changes. We are using the
+        # MACDH as a precondition for trading signals here and required
+        # the MACDH signal a change into a bullish/bearish market. This
+        # signal stays true as long as the signal changes.
         macdh_signal = self.macdh(chart)
-        return macdh_signal
+        if macdh_signal.value == BUY:
+            self._macd = BUY
+        if macdh_signal.value == SELL:
+            self._macd = SELL
+
+        # Finally we are using the double_cross signal as confirmation
+        # of the former MACDH signal
+        dc_signal = self.double_cross(chart)
+        if self._macd == BUY and dc_signal.value == BUY:
+            return dc_signal
+        elif self._macd == SELL and dc_signal.value == SELL:
+            return dc_signal
+        else:
+            return Signal(WAIT, dc_signal.date)
 
 
 def takeprofit(data, sluggish=1.5):
