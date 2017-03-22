@@ -12,6 +12,13 @@ cointrader.strategies.trend module
     :undoc-members:
     :show-inheritance:
 
+cointrader.strategies.momentum module
+----------------------------------
+
+.. automodule:: cointrader.strategies.momentum
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Module contents
 ---------------
