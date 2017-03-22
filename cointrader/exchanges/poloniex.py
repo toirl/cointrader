@@ -216,11 +216,8 @@ class Poloniex(Api):
 
     def balance(self):
         """
-        Returns the balance of the given currency. If not currency is given
-        the balance of all currency are returned.
-
-        Example output::
-
+        Returns the balance of the given currency. If not currency is
+        given the balance of all currency are returned.
         """
         result = {}
         params = {"command": "returnCompleteBalances", "nonce": int(time.time() * 1000)}

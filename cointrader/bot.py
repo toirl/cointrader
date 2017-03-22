@@ -192,10 +192,10 @@ class Cointrader(Base):
         db.commit()
 
     def stat(self, delete_trades=False):
-        """Returns a dictionary with some statistic of the performance of the bot.
-        Performance means how good cointrader performs in comparison to
-        the market movement. Market movement is measured by looking at
-        the start- and end rate of the chart.
+        """Returns a dictionary with some statistic of the performance
+        of the bot.  Performance means how good cointrader performs in
+        comparison to the market movement. Market movement is measured
+        by looking at the start- and end rate of the chart.
 
         The performance of cointrader is measured by looking at the
         start and end value of the trade. These values are also
@@ -271,11 +271,10 @@ class Cointrader(Base):
 
         :btc: Amount of BTC to start trading with
         :interval: Number of seconds to wait until the bot again call
-        for a trading signal. This defaults to the resolution of the bot
-            which is provided on initialisation.
+                   for a trading signal. This defaults to the resolution of the bot
+                   which is provided on initialisation.
         :backtest: Simulate trading on historic chart data on the given market.
         :returns: None
-
         """
         self._start_btc = self.btc
         if interval is None:
