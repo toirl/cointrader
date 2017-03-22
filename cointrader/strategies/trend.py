@@ -31,16 +31,20 @@ class Followtrend(Strategy):
             self._macd = BUY
         if macdh_signal.value == SELL:
             self._macd = SELL
+        log.debug("macdh signal: {}".format(self._macd))
 
         # Finally we are using the double_cross signal as confirmation
         # of the former MACDH signal
         dc_signal = self.double_cross(chart)
         if self._macd == BUY and dc_signal.value == BUY:
-            return dc_signal
+            signal = dc_signal
         elif self._macd == SELL and dc_signal.value == SELL:
-            return dc_signal
+            signal = dc_signal
         else:
-            return Signal(WAIT, dc_signal.date)
+            signal = Signal(WAIT, dc_signal.date)
+
+        log.debug("Final signal @{}: {}".format(signal.date, signal.value))
+        return signal
 
 
 def takeprofit(data, sluggish=1.5):
