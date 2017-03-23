@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
-from cointrader.strategy import NullStrategy
+from cointrader.strategies.null import NullStrategy
 from cointrader.strategies.trend import Followtrend
-from cointrader.strategies.momentum import MACDHMomentum
 
 __author__ = """Torsten Irländer"""
 __email__ = 'torsten.irlaender@googlemail.com'
@@ -17,6 +16,5 @@ db = Session()
 
 STRATEGIES = {
     "null": NullStrategy,
-    "trend": Followtrend,
-    "macdh": MACDHMomentum
+    "trend": Followtrend
 }
