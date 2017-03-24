@@ -26,6 +26,14 @@ class Signal(object):
         self.value = signal
         self.date = date
 
+    @property
+    def buy(self):
+        return self.value == BUY
+
+    @property
+    def sell(self):
+        return self.value == SELL
+
 
 class Strategy(object):
 
