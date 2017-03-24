@@ -162,6 +162,77 @@ class Strategy(object):
         return Signal(signal, date)
 
 
+class NullStrategy(Strategy):
+
+    """The NullStrategy does nothing than WAIT. It will emit not BUY or
+    SELL signal and is therefor the default strategy when starting
+    cointrader to protect the user from loosing money by accident."""
+
+    def details(self, market, resolution):
+        """Will return details on the reasong why the signal was emited."""
+        return {}
+
+    def signal(self, market, resolution, start, end):
+        """Will return either a BUY, SELL or WAIT signal for the given
+        market"""
+        signal = Signal(WAIT, datetime.datetime.utcnow())
+        self._details["WAIT"] = {"signal": signal, "details": "I am just waiting"}
+        return signal
+
+
+class Klondike(Strategy):
+
+    def signal(self, market, resolution, start, end):
+        chart = market.get_chart(resolution, start, end)
+
+        signal = self.macdh(chart)
+        if signal.buy:
+            return signal
+        elif signal.sell:
+            return signal
+        return Signal(WAIT, chart.date)
+
+
+class Followtrend(Strategy):
+    """Simple trend follow strategie."""
+
+    def __init__(self):
+        Strategy.__init__(self)
+        self._macd = WAIT
+
+    def signal(self, market, resolution, start, end):
+        # Get current chart
+        chart = market.get_chart(resolution, start, end)
+        closing = chart.values()
+
+        self._value = closing[-1][1]
+        self._date = datetime.datetime.utcfromtimestamp(closing[-1][0])
+
+        # MACDH is an early indicator for trend changes. We are using the
+        # MACDH as a precondition for trading signals here and required
+        # the MACDH signal a change into a bullish/bearish market. This
+        # signal stays true as long as the signal changes.
+        macdh_signal = self.macdh(chart)
+        if macdh_signal.value == BUY:
+            self._macd = BUY
+        if macdh_signal.value == SELL:
+            self._macd = SELL
+        log.debug("macdh signal: {}".format(self._macd))
+
+        # Finally we are using the double_cross signal as confirmation
+        # of the former MACDH signal
+        dc_signal = self.double_cross(chart)
+        if self._macd == BUY and dc_signal.value == BUY:
+            signal = dc_signal
+        elif self._macd == SELL and dc_signal.value == SELL:
+            signal = dc_signal
+        else:
+            signal = Signal(WAIT, dc_signal.date)
+
+        log.debug("Final signal @{}: {}".format(signal.date, signal.value))
+        return signal
+
+
 class InteractivStrategyWrapper(object):
 
     def __init__(self, strategie):
