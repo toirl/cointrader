@@ -4,6 +4,7 @@ import datetime
 import click
 import logging
 from .helpers import render_bot_statistic, render_bot_tradelog, render_bot_title, render_signal_details
+from cointrader.strategies.helpers import is_max_value, is_min_value
 
 log = logging.getLogger(__name__)
 
@@ -138,6 +139,26 @@ class Strategy(object):
         else:
             signal = WAIT
         self._details["MACDH"] = {"signal": signal, "details": "MACDH: {}".format(macdh)}
+        return Signal(signal, date)
+
+    def macdh_momententum(self, chart):
+
+        macdh = chart.macdh()
+        closing = chart.values()
+        date = datetime.datetime.utcfromtimestamp(closing[-1][0])
+
+        pos_macdh_local_max = is_max_value(macdh) and macdh[-1] > 0
+        pos_macdh_local_min = is_min_value(macdh) and macdh[-1] > 0
+        neg_macdh_local_min = is_min_value(macdh) and macdh[-1] < 0
+        neg_macdh_local_max = is_max_value(macdh) and macdh[-1] < 0
+
+        signal = WAIT
+        if pos_macdh_local_max: #or neg_macdh_local_max:
+            signal = SELL
+        elif neg_macdh_local_min: #or pos_macdh_local_min:
+            signal = BUY
+
+        self._details["MACDHMomentum"] = {"signal": signal, "details": "MACDH: {}".format(macdh)}
         return Signal(signal, date)
 
 
