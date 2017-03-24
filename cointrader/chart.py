@@ -46,6 +46,14 @@ class Chart(object):
     def data(self):
         return self._data
 
+    @property
+    def date(self):
+        return self._data[-1]["date"]
+
+    @property
+    def close(self):
+        return self._data[-1]["close"]
+
     def get_first_point(self):
         return search_chartdata_by_date(self.data, self._start)
 
