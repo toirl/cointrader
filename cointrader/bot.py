@@ -147,6 +147,16 @@ class Cointrader(Base):
         self.btc = 0
         # The bot has either btc to buy or amount of coins to sell.
 
+    def get_last_sell(self):
+        for t in self.trades[::-1]:
+            if t.order_type == "SELL":
+                return t
+
+    def get_last_buy(self):
+        for t in self.trades[::-1]:
+            if t.order_type == "BUY":
+                return t
+
     def _buy(self):
         result = self._market.buy(self.btc)
         order_id = result["orderNumber"]
