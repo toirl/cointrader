@@ -148,14 +148,14 @@ class Strategy(object):
         date = datetime.datetime.utcfromtimestamp(closing[-1][0])
 
         pos_macdh_local_max = is_max_value(macdh) and macdh[-1] > 0
-        pos_macdh_local_min = is_min_value(macdh) and macdh[-1] > 0
+        # pos_macdh_local_min = is_min_value(macdh) and macdh[-1] > 0
         neg_macdh_local_min = is_min_value(macdh) and macdh[-1] < 0
-        neg_macdh_local_max = is_max_value(macdh) and macdh[-1] < 0
+        # neg_macdh_local_max = is_max_value(macdh) and macdh[-1] < 0
 
         signal = WAIT
-        if pos_macdh_local_max: #or neg_macdh_local_max:
+        if pos_macdh_local_max:  # or neg_macdh_local_max:
             signal = SELL
-        elif neg_macdh_local_min: #or pos_macdh_local_min:
+        elif neg_macdh_local_min:  # or pos_macdh_local_min:
             signal = BUY
 
         self._details["MACDHMomentum"] = {"signal": signal, "details": "MACDH: {}".format(macdh)}
