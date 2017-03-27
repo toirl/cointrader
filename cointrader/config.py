@@ -1,9 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
 import os
 import logging
 import logging.config
-import ConfigParser
+if (sys.version_info > (3, 0)):
+    # Python 3 code in this block
+    import configparser
+else:
+    # Python 2 code in this block
+    import ConfigParser as configparser
 
 DEFAULT_CONFIG = ".cointrader.ini"
 
@@ -24,7 +30,7 @@ class Config(object):
 
         if configfile:
             logging.config.fileConfig(configfile.name)
-            config = ConfigParser.ConfigParser()
+            config = configparser.ConfigParser()
             config.readfp(configfile)
             exchange = config.get("DEFAULT", "exchange")
             self.api_key = config.get(exchange, "api_key")

@@ -1,13 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import division
-import urllib
+import sys
 import json
 import time
 import hmac
 import hashlib
 import requests
 import datetime
+
+if (sys.version_info > (3, 0)):
+    # Python 3 code in this block
+    from urllib.parse import urlencode
+else:
+    # Python 2 code in this block
+    from urllib import urlencode
 
 
 def totimestamp(dt):
@@ -23,7 +30,7 @@ class Api(object):
     def __init__(self, config):
         api = config.api
         self.key = api[0]
-        self.secret = api[1]
+        self.secret = api[1].encode()
 
     def ticker(self, currency=None):
         raise NotImplementedError()
@@ -130,7 +137,7 @@ class Poloniex(Api):
         """
         params = {"command": "returnTicker"}
         r = requests.get("https://poloniex.com/public", params=params)
-        result = json.loads(r.content)
+        result = json.loads(r.content.decode())
         if currency:
             return result[currency]
         return result
@@ -149,7 +156,7 @@ class Poloniex(Api):
         """
         params = {"command": "return24hVolume"}
         r = requests.get("https://poloniex.com/public", params=params)
-        result = json.loads(r.content)
+        result = json.loads(r.content.decode())
         if currency:
             pairs = []
             for c in currency:
@@ -174,7 +181,7 @@ class Poloniex(Api):
                   "depth": 10}
 
         r = requests.get("https://poloniex.com/public", params=params)
-        return json.loads(r.content)
+        return json.loads(r.content.decode())
 
     def chart(self, currency, start, end, period=1800):
         """
@@ -212,7 +219,7 @@ class Poloniex(Api):
                   "period": period}
 
         r = requests.get("https://poloniex.com/public", params=params)
-        return json.loads(r.content)
+        return json.loads(r.content.decode())
 
     def balance(self):
         """
@@ -221,10 +228,10 @@ class Poloniex(Api):
         """
         result = {}
         params = {"command": "returnCompleteBalances", "nonce": int(time.time() * 1000)}
-        sign = hmac.new(str(self.secret), urllib.urlencode(params), hashlib.sha512).hexdigest()
+        sign = hmac.new(self.secret, urlencode(params).encode(), hashlib.sha512).hexdigest()
         headers = {"Key": self.key, "Sign": sign}
         r = requests.post("https://poloniex.com/tradingApi", data=params, headers=headers)
-        tmp = json.loads(r.content)
+        tmp = json.loads(r.content.decode())
         for currency in tmp:
             result[currency] = {}
             result[currency]["quantity"] = float(tmp[currency]["available"])
@@ -245,10 +252,10 @@ class Poloniex(Api):
         elif option == "postOnly":
             params["postOnly"] = 1
 
-        sign = hmac.new(str(self.secret), urllib.urlencode(params), hashlib.sha512).hexdigest()
+        sign = hmac.new(str(self.secret), urlencode(params).encode(), hashlib.sha512).hexdigest()
         headers = {"Key": self.key, "Sign": sign}
         r = requests.post("https://poloniex.com/tradingApi", data=params, headers=headers)
-        result = json.loads(r.content)
+        result = json.loads(r.content.decode())
         return result
 
     def sell(self, market, amount, price, option=None):
@@ -265,7 +272,7 @@ class Poloniex(Api):
         elif option == "postOnly":
             params["postOnly"] = 1
 
-        sign = hmac.new(str(self.secret), urllib.urlencode(params), hashlib.sha512).hexdigest()
+        sign = hmac.new(str(self.secret), urlencode(params).encode(), hashlib.sha512).hexdigest()
         headers = {"Key": self.key, "Sign": sign}
         r = requests.post("https://poloniex.com/tradingApi", data=params, headers=headers)
-        return json.loads(r.content)
+        return json.loads(r.content.decode())
