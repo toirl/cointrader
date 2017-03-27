@@ -4,8 +4,10 @@ import datetime
 import click
 import logging
 from .helpers import render_bot_statistic, render_bot_tradelog, render_bot_title, render_signal_details
-from cointrader.signal import WAIT, BUY, SELL, QUIT, signal_map, Signal
-from cointrader.indicators import is_max_value, is_min_value
+from cointrader.indicators import (
+    is_max_value, is_min_value,
+    WAIT, BUY, SELL, QUIT, signal_map, Signal
+)
 
 log = logging.getLogger(__name__)
 
