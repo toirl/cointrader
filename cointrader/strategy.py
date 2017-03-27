@@ -4,36 +4,10 @@ import datetime
 import click
 import logging
 from .helpers import render_bot_statistic, render_bot_tradelog, render_bot_title, render_signal_details
-from cointrader.strategies.helpers import is_max_value, is_min_value
+from cointrader.signal import WAIT, BUY, SELL, QUIT, signal_map, Signal
+from cointrader.indicators import is_max_value, is_min_value
 
 log = logging.getLogger(__name__)
-
-BUY = 1
-SELL = -1
-WAIT = 0
-QUIT = -99
-signal_map = {
-    BUY: "BUY",
-    WAIT: "WAIT",
-    SELL: "SELL",
-    QUIT: "QUIT"
-}
-# Signals for strategies.
-
-
-class Signal(object):
-
-    def __init__(self, signal, date):
-        self.value = signal
-        self.date = date
-
-    @property
-    def buy(self):
-        return self.value == BUY
-
-    @property
-    def sell(self):
-        return self.value == SELL
 
 
 class Strategy(object):

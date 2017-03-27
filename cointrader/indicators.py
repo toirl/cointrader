@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import logging
+import datetime
+from cointrader.signal import WAIT, BUY, SELL, signal_map, Signal
+
+log = logging.getLogger(__name__)
 
 
 def is_max_value(values):
