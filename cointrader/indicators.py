@@ -33,6 +33,135 @@ class Signal(object):
         return self.value == SELL
 
 
+def sma(chart, window=12):
+    """Simple moving averange indicator. Will emit a BUY signal as long
+    as the closing price is above the SMA value. It will emit a SELL
+    signal if the price is below the closing price.
+
+    :chart: Chart instance
+    :window: Window size zu calculate the SMA
+    :returns: Signal
+
+    """
+    sma = chart.sma(window)[-1]
+    closing = chart.values()
+    value = closing[-1][1]
+    date = datetime.datetime.utcfromtimestamp(closing[-1][0])
+
+    signal = WAIT
+    if value > sma:
+        signal = BUY
+    elif value < sma:
+        signal = SELL
+    # self._details["SMA"] = {"signal": signal, "details": "SMA{}: {})".format(window, sma)}
+    return Signal(signal, date)
+
+
+def ema(chart, window=12):
+    """Exponetial moving averange indicator. Will emit a BUY signal as long
+    as the closing price is above the EMA value. It will emit a SELL
+    signal if the price is below the closing price.
+
+    :chart: Chart instance
+    :window: Window size zu calculate the SMA
+    :returns: Signal
+
+    """
+
+    ema = chart.ema(window)[-1]
+    closing = chart.values()
+    value = closing[-1][1]
+    date = datetime.datetime.utcfromtimestamp(closing[-1][0])
+
+    signal = WAIT
+    if value > ema:
+        signal = BUY
+    elif value < ema:
+        signal = SELL
+    # self._details["EMA"] = {"signal": signal, "details": "EMA{}: {})".format(window, ema)}
+        return Signal(signal, date)
+
+
+def double_cross(chart, fast=12, slow=26):
+    """Generates a trade signal based on two moving averanges with
+    different width. A BUY signal is generated if the faster EMA
+    crosses the slower EMA in up direction and the faster EMA is higher
+    than the closing price. A SELL signal is emited if the faster SMA
+    crosses the lower from above and is lower than the closing
+    price.
+
+    :chart: Chart instance
+    :fast: Window size to calculate the faster EMA
+    :slow: Window size to calculate the slower EMA
+    :returns: Signal
+
+    """
+
+    closing = chart.values()
+    value = closing[-1][1]
+    date = datetime.datetime.utcfromtimestamp(closing[-1][0])
+    ema_1 = chart.ema(fast)[-1]
+    ema_2 = chart.ema(slow)[-1]
+    signal = WAIT
+
+    if value > ema_1 and ema_1 > ema_2:
+        signal = BUY
+    elif value < ema_1 and ema_1 < ema_2:
+        signal = SELL
+    # self._details["EMA"] = {"signal": signal, "details": "EMA{}: {}, EMA{}: {})".format(fast, ema_1, slow, ema_2)}
+    return Signal(signal, date)
+
+
+def macdh(chart):
+    """MACDH oscillator. Generates a SELL signal as soon as the macdh
+    value changes from positve value into negativ value. It generates a
+    BUY signal if the value from negativ to positiv.
+
+    :chart: Chart instance
+    :returns: Signal
+    """
+
+    macdh = chart.macdh()[::-1][0:2]
+    closing = chart.values()
+    date = datetime.datetime.utcfromtimestamp(closing[-1][0])
+    if macdh[0] < 0 and macdh[1] > 0:
+        signal = SELL
+    elif macdh[0] > 0 and macdh[1] < 0:
+        signal = BUY
+    else:
+        signal = WAIT
+    # self._details["MACDH"] = {"signal": signal, "details": "MACDH: {}".format(macdh)}
+    return Signal(signal, date)
+
+
+def macdh_momententum(chart):
+    """Modified MACDH oscillator. Generates a SELL signal as soon as the
+    macdh has exceeded its maximum value. It generates a BUY signal if
+    the value exides its minimum value.
+
+    :chart: Chart instance
+    :returns: Signal
+    """
+
+    macdh = chart.macdh()
+    closing = chart.values()
+    date = datetime.datetime.utcfromtimestamp(closing[-1][0])
+
+    pos_macdh_local_max = is_max_value(macdh) and macdh[-1] > 0
+    # pos_macdh_local_min = is_min_value(macdh) and macdh[-1] > 0
+    neg_macdh_local_min = is_min_value(macdh) and macdh[-1] < 0
+    # neg_macdh_local_max = is_max_value(macdh) and macdh[-1] < 0
+
+    signal = WAIT
+    if pos_macdh_local_max:  # or neg_macdh_local_max:
+        signal = SELL
+    elif neg_macdh_local_min:  # or pos_macdh_local_min:
+        signal = BUY
+
+    # self._details["MACDHMomentum"] = {"signal": signal, "details": "MACDH: {}".format(macdh)}
+    return Signal(signal, date)
+
+
 def is_max_value(values):
     """Will return True if the last recent values of the given list of
     values describe a local maximum value. A local maximum is defined as

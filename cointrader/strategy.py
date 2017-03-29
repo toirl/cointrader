@@ -5,8 +5,7 @@ import click
 import logging
 from .helpers import render_bot_statistic, render_bot_tradelog, render_bot_title, render_signal_details
 from cointrader.indicators import (
-    is_max_value, is_min_value,
-    WAIT, BUY, SELL, QUIT, signal_map, Signal
+    WAIT, BUY, SELL, QUIT, signal_map, Signal, macdh_momententum
 )
 
 log = logging.getLogger(__name__)
@@ -40,103 +39,6 @@ class Strategy(object):
         market"""
         raise NotImplementedError
 
-    def sma(self, chart, window=12):
-        """Generates a trade signal based on a moving averanges. A BUY
-        signal is generated if the EMA higher than the closing price. A
-        SELL signal is emited if the EMA is lower than the closing
-        price."""
-
-        sma = chart.sma(window)[-1]
-        closing = chart.values()
-        value = closing[-1][1]
-        date = datetime.datetime.utcfromtimestamp(closing[-1][0])
-
-        signal = WAIT
-        if value > sma:
-            signal = BUY
-        elif value < sma:
-            signal = SELL
-        self._details["SMA"] = {"signal": signal, "details": "SMA{}: {})".format(window, sma)}
-        return Signal(signal, date)
-
-    def ema(self, chart, window=12):
-        """Generates a trade signal based on a moving averanges. A BUY
-        signal is generated if the EMA higher than the closing price. A
-        SELL signal is emited if the EMA is lower than the closing
-        price."""
-
-        ema = chart.ema(window)[-1]
-        closing = chart.values()
-        value = closing[-1][1]
-        date = datetime.datetime.utcfromtimestamp(closing[-1][0])
-
-        signal = WAIT
-        if value > ema:
-            signal = BUY
-        elif value < ema:
-            signal = SELL
-        self._details["EMA"] = {"signal": signal, "details": "EMA{}: {})".format(window, ema)}
-        return Signal(signal, date)
-
-    def double_cross(self, chart, fast=12, slow=26):
-        """Generates a trade signal based on two moving averanges with
-        different width. A BUY signal is generated if the faster EMA
-        crosses the slower EMA in up direction and the faster EMA is higher
-        than the closing price. A SELL signal is emited if the faster SMA
-        crosses the lower from above and is lower than the closing
-        price."""
-
-        closing = chart.values()
-        value = closing[-1][1]
-        date = datetime.datetime.utcfromtimestamp(closing[-1][0])
-        ema_1 = chart.ema(fast)[-1]
-        ema_2 = chart.ema(slow)[-1]
-        signal = WAIT
-
-        if value > ema_1 and ema_1 > ema_2:
-            signal = BUY
-        elif value < ema_1 and ema_1 < ema_2:
-            signal = SELL
-        self._details["EMA"] = {"signal": signal, "details": "EMA{}: {}, EMA{}: {})".format(fast, ema_1, slow, ema_2)}
-        return Signal(signal, date)
-
-    def macdh(self, chart):
-        """Generates a SELL signal as soon as the macdh value changes
-        from positve value into negativ value. It generates a BUY signal
-        if the value from negativ to positiv."""
-
-        macdh = chart.macdh()[::-1][0:2]
-        closing = chart.values()
-        date = datetime.datetime.utcfromtimestamp(closing[-1][0])
-        if macdh[0] < 0 and macdh[1] > 0:
-            signal = SELL
-        elif macdh[0] > 0 and macdh[1] < 0:
-            signal = BUY
-        else:
-            signal = WAIT
-        self._details["MACDH"] = {"signal": signal, "details": "MACDH: {}".format(macdh)}
-        return Signal(signal, date)
-
-    def macdh_momententum(self, chart):
-
-        macdh = chart.macdh()
-        closing = chart.values()
-        date = datetime.datetime.utcfromtimestamp(closing[-1][0])
-
-        pos_macdh_local_max = is_max_value(macdh) and macdh[-1] > 0
-        # pos_macdh_local_min = is_min_value(macdh) and macdh[-1] > 0
-        neg_macdh_local_min = is_min_value(macdh) and macdh[-1] < 0
-        # neg_macdh_local_max = is_max_value(macdh) and macdh[-1] < 0
-
-        signal = WAIT
-        if pos_macdh_local_max:  # or neg_macdh_local_max:
-            signal = SELL
-        elif neg_macdh_local_min:  # or pos_macdh_local_min:
-            signal = BUY
-
-        self._details["MACDHMomentum"] = {"signal": signal, "details": "MACDH: {}".format(macdh)}
-        return Signal(signal, date)
-
 
 class NullStrategy(Strategy):
 
@@ -152,7 +54,7 @@ class NullStrategy(Strategy):
         """Will return either a BUY, SELL or WAIT signal for the given
         market"""
         signal = Signal(WAIT, datetime.datetime.utcnow())
-        self._details["WAIT"] = {"signal": signal, "details": "I am just waiting"}
+        # self._details["WAIT"] = {"signal": signal, "details": "I am just waiting"}
         return signal
 
 
@@ -160,8 +62,7 @@ class Klondike(Strategy):
 
     def signal(self, market, resolution, start, end):
         chart = market.get_chart(resolution, start, end)
-
-        signal = self.macdh(chart)
+        signal = macdh_momententum(chart)
         if signal.buy:
             return signal
         elif signal.sell:
