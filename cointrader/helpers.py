@@ -10,10 +10,10 @@ def colorize_value(value):
         return colored(value, "green")
 
 
-def render_signal_details(details):
+def render_signal_details(signals):
     out = [["Indicator", "Signal", "Details"]]
-    for d in details:
-        out.append([d, colorize_value(details[d]["signal"]), details[d]["details"]])
+    for s in signals:
+        out.append([s, signals[s].value, signals[s].details])
     table = AsciiTable(out).table
     return "\n".join(["\nSignal:", table])
 

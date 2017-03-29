@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import datetime
 import click
 import logging
@@ -20,16 +19,11 @@ class Strategy(object):
 
     def __init__(self):
         self.bot = None
+        self.signals = {}
+        """Dictionary with details on the signal(s)
+        {"indicator": {"signal": 1, "details": Foo}}"""
         self._chart = None
         """Current chart"""
-        self._details = {}
-        """Dictionary with details on the signal(s)
-        {"indicator": {"signal": 1, "details": Foo}}
-        """
-
-    def details(self, market, resolution):
-        """Will return details on the reasong why the signal was emited."""
-        return self._details
 
     def set_bot(self, bot):
         self.bot = bot
@@ -46,15 +40,11 @@ class NullStrategy(Strategy):
     SELL signal and is therefor the default strategy when starting
     cointrader to protect the user from loosing money by accident."""
 
-    def details(self, market, resolution):
-        """Will return details on the reasong why the signal was emited."""
-        return {}
-
     def signal(self, market, resolution, start, end):
         """Will return either a BUY, SELL or WAIT signal for the given
         market"""
         signal = Signal(WAIT, datetime.datetime.utcnow())
-        # self._details["WAIT"] = {"signal": signal, "details": "I am just waiting"}
+        self.signals["WAIT"] = signal
         return signal
 
 
@@ -63,6 +53,7 @@ class Klondike(Strategy):
     def signal(self, market, resolution, start, end):
         chart = market.get_chart(resolution, start, end)
         signal = macdh_momententum(chart)
+        self.signals["MACDH_MOMEMENTUM"] = signal
         if signal.buy:
             return signal
         elif signal.sell:
@@ -107,6 +98,7 @@ class Followtrend(Strategy):
             signal = Signal(WAIT, dc_signal.date)
 
         log.debug("Final signal @{}: {}".format(signal.date, signal.value))
+        self.signals["DC"] = signal
         return signal
 
 
@@ -131,7 +123,7 @@ class InteractivStrategyWrapper(object):
         signal = self._strategie.signal(market, resolution, start, end)
 
         click.echo('Signal: {} {}'.format(signal.date, signal_map[signal.value]))
-        click.echo(render_signal_details(self._strategie.details(market, resolution)))
+        click.echo(render_signal_details(self._strategie.signals))
         click.echo('')
         options = []
         if self.bot.btc:
@@ -160,7 +152,7 @@ class InteractivStrategyWrapper(object):
         if c == 'p':
             click.echo(render_bot_statistic(self.bot.stat()))
         if c == 'd':
-            click.echo(render_signal_details(self._strategie.details(market, resolution)))
+            click.echo(render_signal_details(self._strategie.signals))
         if c == 'q':
             return Signal(QUIT, datetime.datetime.utcnow())
         else:

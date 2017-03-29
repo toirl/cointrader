@@ -23,6 +23,7 @@ class Signal(object):
     def __init__(self, signal, date):
         self.value = signal
         self.date = date
+        self.details = None
 
     @property
     def buy(self):
