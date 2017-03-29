@@ -20,10 +20,10 @@ signal_map = {
 
 class Signal(object):
 
-    def __init__(self, signal, date):
+    def __init__(self, signal, date, details=None):
         self.value = signal
         self.date = date
-        self.details = None
+        self.details = details
 
     @property
     def buy(self):
@@ -54,8 +54,7 @@ def sma(chart, window=12):
         signal = BUY
     elif value < sma:
         signal = SELL
-    # self._details["SMA"] = {"signal": signal, "details": "SMA{}: {})".format(window, sma)}
-    return Signal(signal, date)
+    return Signal(signal, date, "SMA{}: {}".format(window, sma))
 
 
 def ema(chart, window=12):
@@ -79,8 +78,7 @@ def ema(chart, window=12):
         signal = BUY
     elif value < ema:
         signal = SELL
-    # self._details["EMA"] = {"signal": signal, "details": "EMA{}: {})".format(window, ema)}
-        return Signal(signal, date)
+    return Signal(signal, date, "EMA{}: {}".format(window, sma))
 
 
 def double_cross(chart, fast=12, slow=26):
@@ -109,8 +107,7 @@ def double_cross(chart, fast=12, slow=26):
         signal = BUY
     elif value < ema_1 and ema_1 < ema_2:
         signal = SELL
-    # self._details["EMA"] = {"signal": signal, "details": "EMA{}: {}, EMA{}: {})".format(fast, ema_1, slow, ema_2)}
-    return Signal(signal, date)
+    return Signal(signal, date, "EMA{}: {}, EMA{}: {})".format(fast, ema_1, slow, ema_2))
 
 
 def macdh(chart):
@@ -159,8 +156,7 @@ def macdh_momententum(chart):
     elif neg_macdh_local_min:  # or pos_macdh_local_min:
         signal = BUY
 
-    # self._details["MACDHMomentum"] = {"signal": signal, "details": "MACDH: {}".format(macdh)}
-    return Signal(signal, date)
+    return Signal(signal, date, "MAX: {}, MIN {})".format(pos_macdh_local_max, neg_macdh_local_min))
 
 
 def is_max_value(values):
