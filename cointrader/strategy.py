@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 import datetime
-import click
 import logging
-from .helpers import render_bot_statistic, render_bot_tradelog, render_bot_title, render_signal_details
 from cointrader.indicators import (
-    WAIT, BUY, SELL, QUIT, signal_map, Signal, macdh_momententum
+    WAIT, BUY, SELL, Signal, macdh_momententum
 )
 
 log = logging.getLogger(__name__)
@@ -28,7 +26,7 @@ class Strategy(object):
     def set_bot(self, bot):
         self.bot = bot
 
-    def signal(self, market, resolution, start, end):
+    def signal(self, chart):
         """Will return either a BUY, SELL or WAIT signal for the given
         market"""
         raise NotImplementedError
@@ -40,7 +38,7 @@ class NullStrategy(Strategy):
     SELL signal and is therefor the default strategy when starting
     cointrader to protect the user from loosing money by accident."""
 
-    def signal(self, market, resolution, start, end):
+    def signal(self, chart):
         """Will return either a BUY, SELL or WAIT signal for the given
         market"""
         signal = Signal(WAIT, datetime.datetime.utcnow())
@@ -50,8 +48,7 @@ class NullStrategy(Strategy):
 
 class Klondike(Strategy):
 
-    def signal(self, market, resolution, start, end):
-        chart = market.get_chart(resolution, start, end)
+    def signal(self, chart):
         signal = macdh_momententum(chart)
         self.signals["MACDH_MOMEMENTUM"] = signal
         if signal.buy:
@@ -68,9 +65,8 @@ class Followtrend(Strategy):
         Strategy.__init__(self)
         self._macd = WAIT
 
-    def signal(self, market, resolution, start, end):
+    def signal(self, chart):
         # Get current chart
-        chart = market.get_chart(resolution, start, end)
         closing = chart.values()
 
         self._value = closing[-1][1]
@@ -100,60 +96,3 @@ class Followtrend(Strategy):
         log.debug("Final signal @{}: {}".format(signal.date, signal.value))
         self.signals["DC"] = signal
         return signal
-
-
-class InteractivStrategyWrapper(object):
-
-    def __init__(self, strategie):
-        self._strategie = strategie
-        self.bot = None
-
-    def set_bot(self, bot):
-        self.bot = bot
-
-    def __str__(self):
-        return "Interavtiv: {}".format(self._strategie)
-
-    def signal(self, market, resolution, start, end):
-        """Will return either a BUY, SELL or WAIT signal for the given
-        market"""
-
-        # Get current chart
-        click.echo(render_bot_title(self.bot, market, resolution))
-        signal = self._strategie.signal(market, resolution, start, end)
-
-        click.echo('Signal: {} {}'.format(signal.date, signal_map[signal.value]))
-        click.echo(render_signal_details(self._strategie.signals))
-        click.echo('')
-        options = []
-        if self.bot.btc:
-            options.append("b) Buy")
-        if self.bot.amount:
-            options.append("s) Sell")
-        options.append("l) Tradelog")
-        options.append("p) Performance of bot")
-        options.append("d) Show details on signal")
-        options.append("q) Quit")
-        options.append("")
-        options.append("Press any key to continue")
-
-        click.echo(u'\n'.join(options))
-        c = click.getchar()
-        if c == 'b' and self.bot.btc:
-            # btc = click.prompt('BTC', default=self.bot.btc)
-            if click.confirm('Buy for {} btc?'.format(self.bot.btc)):
-                return Signal(BUY, datetime.datetime.utcnow())
-        if c == 's' and self.bot.amount:
-            # amount = click.prompt('Amount', default=self.bot.amount)
-            if click.confirm('Sell {}?'.format(self.bot.amount)):
-                return Signal(SELL, datetime.datetime.utcnow())
-        if c == 'l':
-            click.echo(render_bot_tradelog(self.bot.trades))
-        if c == 'p':
-            click.echo(render_bot_statistic(self.bot.stat()))
-        if c == 'd':
-            click.echo(render_signal_details(self._strategie.signals))
-        if c == 'q':
-            return Signal(QUIT, datetime.datetime.utcnow())
-        else:
-            return Signal(WAIT, datetime.datetime.utcnow())

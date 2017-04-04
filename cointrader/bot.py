@@ -1,10 +1,25 @@
 # -*- coding: utf-8 -*-
+import select
+
+import sys
 import datetime
 import time
 import logging
 import sqlalchemy as sa
+import click
 from cointrader import Base, engine, db
-from cointrader.strategy import BUY, SELL, QUIT
+from cointrader.indicators import (
+    WAIT, BUY, SELL, Signal
+)
+from cointrader.helpers import (
+    render_bot_statistic, render_bot_tradelog,
+    render_bot_title, render_signal_detail,
+    render_user_options
+)
+
+TIMEOUT = 0
+# Number of seconds the bot will wait for user input in automatic mode
+# to reattach the bot
 
 log = logging.getLogger(__name__)
 
@@ -130,12 +145,14 @@ class Cointrader(Base):
     active = sa.Column(sa.Boolean, nullable=False, default=True)
     market = sa.Column(sa.String, nullable=False)
     strategy = sa.Column(sa.String, nullable=False)
+    automatic = sa.Column(sa.Boolean, nullable=False)
     trades = sa.orm.relationship("Trade")
 
-    def __init__(self, market, strategy, resolution="30m", start=None, end=None):
+    def __init__(self, market, strategy, resolution="30m", start=None, end=None, automatic=False):
 
         self.market = market._name
         self.strategy = str(strategy)
+        self.automatic = automatic
 
         self._market = market
         self._strategy = strategy
@@ -267,7 +284,23 @@ class Cointrader(Base):
     def _in_time(self, date):
         return (self._start is None or self._start <= date) and (self._end is None or date <= self._end)
 
-    def start(self, interval=None, backtest=False):
+    def _get_interval(self, automatic, backtest):
+        # Set number of seconds to wait until the bot again call for a
+        # trading signal. This defaults to the resolution of the bot
+        # which is provided on initialisation.
+        if automatic and not backtest:
+            interval = self._market._exchange.resolution2seconds(self._resolution)
+        else:
+            interval = 0
+        return interval
+
+    def _handle_signal(self, signal):
+        if signal.value == BUY and self.btc and self._in_time(signal.date):
+            self._buy()
+        elif signal.value == SELL and self.amount and self._in_time(signal.date):
+            self._sell()
+
+    def start(self, backtest=False, automatic=False):
         """Start the bot and begin trading with given amount of BTC.
 
         The bot will trigger a analysis of the chart every N seconds.
@@ -280,26 +313,69 @@ class Cointrader(Base):
         your strategy performs.
 
         :btc: Amount of BTC to start trading with
-        :interval: Number of seconds to wait until the bot again call
-                   for a trading signal. This defaults to the resolution of the bot
-                   which is provided on initialisation.
         :backtest: Simulate trading on historic chart data on the given market.
         :returns: None
         """
-        self._start_btc = self.btc
-        if interval is None:
-            interval = self._market._exchange.resolution2seconds(self._resolution)
+
         while 1:
-            signal = self._strategy.signal(self._market, self._resolution, self._start, self._end)
-            if signal.value == BUY and self.btc and self._in_time(signal.date):
-                self._buy()
-            elif signal.value == SELL and self.amount and self._in_time(signal.date):
-                self._sell()
-            elif signal.value == QUIT:
-                log.info("Bot stopped")
-                break
+            chart = self._market.get_chart(self._resolution, self._start, self._end)
+            signal = self._strategy.signal(chart)
+            log.debug("{} {}".format(signal.date, signal.value))
+            interval = self._get_interval(self.automatic, backtest)
+
+            if not automatic:
+                click.echo(render_bot_title(self, self._market, chart))
+                click.echo(render_signal_detail(signal))
+
+                options = []
+                if self.btc:
+                    options.append(('b', 'Buy'))
+                if self.amount:
+                    options.append(('s', 'Sell'))
+                options.append(('l', 'Tradelog'))
+                options.append(('p', 'Performance of bot'))
+                if not automatic:
+                    options.append(('d', 'Detach'))
+                options.append(('q', 'Quit'))
+
+                click.echo(render_user_options(options))
+                c = click.getchar()
+                if c == 'b' and self.btc:
+                    # btc = click.prompt('BTC', default=self.self.btc)
+                    if click.confirm('Buy for {} btc?'.format(self.btc)):
+                        signal = Signal(BUY, datetime.datetime.utcnow())
+                if c == 's' and self.amount:
+                    # amount = click.prompt('Amount', default=self.self.amount)
+                    if click.confirm('Sell {}?'.format(self.amount)):
+                        signal = Signal(SELL, datetime.datetime.utcnow())
+                if c == 'l':
+                    click.echo(render_bot_tradelog(self.trades))
+                if c == 'p':
+                    click.echo(render_bot_statistic(self.stat()))
+                if c == 'd':
+                    automatic = True
+                    log.info("Bot detached")
+                if c == 'q':
+                    log.info("Bot stopped")
+                    sys.exit(0)
+                else:
+                    signal = Signal(WAIT, datetime.datetime.utcnow())
+
+            if automatic:
+                click.echo("Press 'A' with in the next {} secods to reattach the bot.".format(TIMEOUT))
+                i, o, e = select.select([sys.stdin], [], [], TIMEOUT)
+                if (i):
+                    value = sys.stdin.readline().strip()
+                    print(value)
+                    if value == "A":
+                        automatic = False
+
+            if signal:
+                self._handle_signal(signal)
+
             if backtest:
                 if not self._market.continue_backtest():
                     log.info("Backtest finished")
                     break
+
             time.sleep(interval)

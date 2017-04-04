@@ -10,18 +10,30 @@ def colorize_value(value):
         return colored(value, "green")
 
 
-def render_signal_details(signals):
-    out = [["Indicator", "Signal", "Details"]]
-    for s in signals:
-        out.append([s, signals[s].value, signals[s].details])
-    table = AsciiTable(out).table
-    return "\n".join(["\nSignal:", table])
+# def render_signal_details(signals):
+#     out = [["Indicator", "Signal", "Details"]]
+#     for s in signals:
+#         out.append([s, signals[s].value, signals[s].details])
+#     table = AsciiTable(out).table
+#     return "\n".join(["\nSignal:", table])
+
+def render_signal_detail(signal):
+    if signal.buy:
+        return colored("BUY", "green")
+    else:
+        return colored("SELL", "red")
 
 
-def render_bot_title(bot, market, resolution):
+def render_user_options(options):
+    out = []
+    for o in options:
+        out.append("{}) {}".format(o[0], o[1]))
+    return "\n".join(out)
+
+
+def render_bot_title(bot, market, chart):
 
     out = ["\n"]
-    chart = market.get_chart(resolution)
     data = chart._data
 
     if len(data) > 1:
@@ -31,7 +43,7 @@ def render_bot_title(bot, market, resolution):
     current = data[-1]
 
     values = {}
-    values["date"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    values["date"] = datetime.datetime.utcfromtimestamp(current["date"])
     if current["close"] > last["close"]:
         values["rate"] = colored(current["close"], "green")
     else:

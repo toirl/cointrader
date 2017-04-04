@@ -7,7 +7,6 @@ from cointrader import db, STRATEGIES
 from cointrader.config import Config, get_path_to_config
 from cointrader.exchange import Poloniex
 from cointrader.bot import init_db, get_bot
-from cointrader.strategy import InteractivStrategyWrapper
 from cointrader.helpers import render_bot_statistic, render_bot_tradelog
 
 log = logging.getLogger(__name__)
@@ -90,6 +89,7 @@ def balance(ctx):
 @pass_context
 def start(ctx, market, resolution, start, end, automatic, backtest, papertrade, strategy, btc, coins):
     """Start a new bot on the given market and the given amount of BTC"""
+
     market = ctx.exchange.get_market(market, backtest, papertrade)
     strategy = STRATEGIES[strategy]()
 
@@ -98,19 +98,13 @@ def start(ctx, market, resolution, start, end, automatic, backtest, papertrade, 
     if end:
         end = datetime.datetime.strptime(end, "%Y-%m-%d %H:%M:%S")
 
-    if not automatic:
-        interval = 0  # Disable waiting in interactive mode
-        strategy = InteractivStrategyWrapper(strategy)
-    elif backtest:
+    if backtest:
         if start is None or end is None:
             click.echo("Error! For backtests you must provide a timeframe by setting start and end!")
             sys.exit(1)
-        interval = 0  # Disable waiting in backtest mode
-    else:
-        interval = ctx.exchange.resolution2seconds(resolution)
 
     bot = get_bot(market, strategy, resolution, start, end, btc, coins)
-    bot.start(interval, backtest)
+    bot.start(backtest, automatic)
 
     if backtest:
         click.echo(render_bot_tradelog(bot.trades))
