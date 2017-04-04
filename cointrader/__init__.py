@@ -7,7 +7,7 @@ from cointrader.strategy import Klondike
 
 __author__ = """Torsten Irländer"""
 __email__ = 'torsten.irlaender@googlemail.com'
-__version__ = '0.4.0'
+__version__ = '0.5.0'
 
 Base = declarative_base()
 

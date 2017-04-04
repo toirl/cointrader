@@ -2,6 +2,14 @@
 History
 =======
 
+0.5.0 (not yet released)
+------------------------
+Overall code refectoring. Moved indicators into its own modul. Cleanup
+strategy code and reworked the interctive mode.
+
+* Added option to detach a bot into automatic mode and to reatach a bot into
+  intercativ mode.
+
 0.4.0 (2017-03-16)
 ------------------
 First version with real trading functionality. However **cointrader has no
