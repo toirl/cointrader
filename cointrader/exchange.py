@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import datetime
+import collections
 import time
 from cointrader.exchanges.poloniex import Poloniex as PoloniexApi
 from cointrader.chart import Chart
@@ -208,11 +209,11 @@ class Exchange(object):
     def __init__(self, config, api=None):
         """TODO: to be defined1. """
         self._api = api
-        self.coins = {}
+        self.coins = collections.OrderedDict()
 
         # Setup coins
         balance = self._api.balance()
-        for currency in balance:
+        for currency in sorted(balance):
             if balance[currency]["quantity"] > 0:
                 self.coins[currency] = Coin(currency,
                                             balance[currency]["quantity"],
