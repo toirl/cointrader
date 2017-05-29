@@ -214,7 +214,7 @@ class Exchange(object):
         # Setup coins
         balance = self._api.balance()
         for currency in sorted(balance):
-            if balance[currency]["quantity"] > 0:
+            if balance[currency]["btc_value"] > 0:
                 self.coins[currency] = Coin(currency,
                                             balance[currency]["quantity"],
                                             balance[currency]["btc_value"])
