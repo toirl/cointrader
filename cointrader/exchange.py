@@ -271,7 +271,18 @@ class Exchange(object):
                       key=lambda x: (float(x[1]["volume"]), float(x[1]["change"])), reverse=True)[0:limit]
 
     def get_market(self, market, backtest=False, dry_run=False):
-        raise NotImplementedError
+        if self.is_valid_market(market):
+            # Check if market is available
+            if backtest:
+                return BacktestMarket(self, market)
+            else:
+                return Market(self, market, dry_run)
+        else:
+            raise ValueError("Market {} is not available".format(market))
+
+    def is_valid_market(self, market):
+        ticker = self._api.ticker()
+        return market in ticker.keys()
 
     def resolution2seconds(self, resolution):
         return self.resolutions[resolution]
@@ -302,9 +313,3 @@ class Poloniex(Exchange):
             return self._api.balance()
         else:
             return self._api.balance()[currency]
-
-    def get_market(self, name, backtest=False, dry_run=False):
-        if backtest:
-            return BacktestMarket(self, name)
-        else:
-            return Market(self, name, dry_run)

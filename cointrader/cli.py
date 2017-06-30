@@ -90,7 +90,11 @@ def balance(ctx):
 def start(ctx, market, resolution, start, end, automatic, backtest, papertrade, strategy, btc, coins):
     """Start a new bot on the given market and the given amount of BTC"""
 
-    market = ctx.exchange.get_market(market, backtest, papertrade)
+    try:
+        market = ctx.exchange.get_market(market, backtest, papertrade)
+    except ValueError as ex:
+        click.echo(ex.message)
+        sys.exit(1)
     strategy = STRATEGIES[strategy]()
 
     if start:
