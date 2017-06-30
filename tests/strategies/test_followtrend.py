@@ -70,8 +70,8 @@ def test_falling_correction():
 
 def test_raising_buy_signal():
     """Test correction phase. After reaching a local maximum and local
-    minimum we are in correction phase and the last maximum is exeeded.
-    BUY signal is emitted"""
+    minimum we are in correction phase. At the end the local max is
+    exeeded and a BUY signal is emitted"""
     from cointrader.indicators import followtrend
     chart = [(0, 1), (0, 2), (0, 5), (0, 4), (0, 3), (0, 4), (0, 3), (0, 4), (0, 3), (0, 5), (0, 6)]
     signal = followtrend(chart)
@@ -80,29 +80,29 @@ def test_raising_buy_signal():
 
 def test_raising_sell_signal():
     """Test correction phase. After reaching a local maximum and local
-    minimum we are in correction phase and the last minimum is exeeded.
-    SELL signal is emitted"""
+    minimum we are in correction phase. At the end the local min is
+    exeeded and a SELL signal is emitted"""
     from cointrader.indicators import followtrend
-    chart = [(0, 7), (0, 3), (0, 5), (0, 4), (0, 3), (0, 4), (0, 3), (0, 4), (0, 3), (0, 3), (0, 2)]
+    chart = [(0, 1), (0, 2), (0, 5), (0, 4), (0, 3), (0, 4), (0, 3), (0, 4), (0, 3), (0, 1), (0, 0)]
     signal = followtrend(chart)
     assert signal.value == -1
 
 
 def test_falling_buy_signal():
     """Test correction phase. After reaching a local maximum and local
-    minimum we are in correction phase and the last maximum is exeeded.
-    BUY signal is emitted"""
+    minimum we are in correction phase and the end the local max is
+    exeeded and a BUY signal is emitted."""
     from cointrader.indicators import followtrend
-    chart = [(0, 9), (0, 8), (0, 5), (0, 6), (0, 7), (0, 6), (0, 5), (0, 6), (0, 1), (0, 0)]
+    chart = [(0, 9), (0, 8), (0, 5), (0, 6), (0, 7), (0, 6), (0, 5), (0, 6), (0, 11), (0, 12), (0, 12)]
     signal = followtrend(chart)
-    assert signal.value == -1
+    assert signal.value == 1
 
 
 def test_falling_sell_signal():
     """Test correction phase. After reaching a local maximum and local
-    minimum we are in correction phase and the last maximum is exeeded.
-    BUY signal is emitted"""
+    minimum we are in correction phase and the end the local min is
+    exeeded and a SELL signal is emitted."""
     from cointrader.indicators import followtrend
-    chart = [(0, 9), (0, 8), (0, 5), (0, 6), (0, 7), (0, 6), (0, 5), (0, 5), (0, 4)]
+    chart = [(0, 9), (0, 8), (0, 5), (0, 6), (0, 7), (0, 6), (0, 5), (0, 6), (0, 1), (0, 0), (0, 0)]
     signal = followtrend(chart)
     assert signal.value == -1
