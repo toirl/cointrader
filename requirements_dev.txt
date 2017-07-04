@@ -8,4 +8,4 @@ tox==2.7.0
 coverage==4.4.1
 cryptography==1.9
 PyYAML==3.12
-pytest==3.1.2
+pytest==3.1.3
