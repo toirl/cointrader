@@ -15,6 +15,10 @@ def add_fee(btc, fee=0.025):
     return btc - (btc / 100 * fee)
 
 
+class ExchangeException(Exception):
+    pass
+
+
 class Coin(object):
 
     """Docstring for Coin."""
@@ -282,7 +286,11 @@ class Exchange(object):
         return market in self.markets
 
     def resolution2seconds(self, resolution):
-        return self.resolutions[resolution]
+        try:
+            return self.resolutions[resolution]
+        except KeyError:
+            raise ExchangeException("Resolution {} is not supported.\n"
+                                    "Please choose one of the following: {}".format(resolution, ", ".join(self.resolutions.keys())))
 
 
 class Poloniex(Exchange):
