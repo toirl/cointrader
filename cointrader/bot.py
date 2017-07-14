@@ -344,18 +344,18 @@ class Cointrader(Base):
                     # btc = click.prompt('BTC', default=self.self.btc)
                     if click.confirm('Buy for {} btc?'.format(self.btc)):
                         signal = Signal(BUY, datetime.datetime.utcnow())
-                if c == 's' and self.amount:
+                elif c == 's' and self.amount:
                     # amount = click.prompt('Amount', default=self.self.amount)
                     if click.confirm('Sell {}?'.format(self.amount)):
                         signal = Signal(SELL, datetime.datetime.utcnow())
-                if c == 'l':
+                elif c == 'l':
                     click.echo(render_bot_tradelog(self.trades))
-                if c == 'p':
+                elif c == 'p':
                     click.echo(render_bot_statistic(self.stat()))
-                if c == 'd':
+                elif c == 'd':
                     automatic = True
                     log.info("Bot detached")
-                if c == 'q':
+                elif c == 'q':
                     log.info("Bot stopped")
                     sys.exit(0)
                 else:
