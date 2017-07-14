@@ -240,8 +240,6 @@ class Exchange(object):
             if currency.startswith("BTC_"):
                 change = round(float(ticker[currency]["percentChange"]) * 100, 2)
                 volume = round(float(ticker[currency]["baseVolume"]), 1)
-                if change <= 0:
-                    continue
                 tmp[currency] = {"volume": volume, "change": change}
         return tmp
 
@@ -281,8 +279,7 @@ class Exchange(object):
             raise ValueError("Market {} is not available".format(market))
 
     def is_valid_market(self, market):
-        ticker = self._api.ticker()
-        return market in ticker.keys()
+        return market in self.markets
 
     def resolution2seconds(self, resolution):
         return self.resolutions[resolution]
