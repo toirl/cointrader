@@ -49,16 +49,22 @@ def explore(ctx, order_by_volume, order_by_profit, limit):
         for market in markets:
             url = "https://poloniex.com/exchange#{}".format(market[0].lower())
             click.echo("{:<10} {:>6}% {:>10} {:>20}".format(market[0], market[1]["change"], market[1]["volume"], url))
+        if len(markets) == 0:
+            click.echo("Sorry. Can not find any market which is in the TOP{} for profit and trade volume. Try to increase the limit using the --limit parameter.".format(limit))
     elif order_by_volume:
         markets = ctx.exchange.get_top_volume_markets(markets, limit)
         for market in markets:
             url = "https://poloniex.com/exchange#{}".format(market[0].lower())
             click.echo("{:<10} {:>10} {:>6}% {:>20}".format(market[0], market[1]["volume"], market[1]["change"], url))
+        if len(markets) == 0:
+            click.echo("Sorry. Can not find any market which is in the TOP{} for trade volume. Try to increase the limit using the --limit parameter.".format(limit))
     elif order_by_profit:
         markets = ctx.exchange.get_top_profit_markets(markets, limit)
         for market in markets:
             url = "https://poloniex.com/exchange#{}".format(market[0].lower())
             click.echo("{:<10} {:>6}% {:>10} {:>20}".format(market[0], market[1]["change"], market[1]["volume"], url))
+        if len(markets) == 0:
+            click.echo("Sorry. Can not find any market which is in the TOP{} for profit. Try to increase the limit using the --limit parameter.".format(limit))
 
 
 @click.command()
