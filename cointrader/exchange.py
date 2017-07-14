@@ -206,9 +206,15 @@ class BacktestMarket(Market):
 class Exchange(object):
 
     """Baseclass for all exchanges"""
-    resolutions = {"5m": 5 * 60, "15m": 15 * 60,
-                   "30m": 30 * 60, "1h": 60 * 60 * 1,
-                   "2h": 60 * 60 * 2, "4h": 60 * 60 * 4, "24h": 60 * 60 * 24}
+
+    # According to Poloniex support the following candlestick period in
+    # seconds; valid values are 300, 900, 1800, 7200, 14400, and 86400.
+    resolutions = {"5m": 300,
+                   "15m": 900,
+                   "30m": 1800,
+                   "2h": 7200,
+                   "4h": 14400,
+                   "24h": 86400}
 
     def __init__(self, config, api=None):
         """TODO: to be defined1. """
