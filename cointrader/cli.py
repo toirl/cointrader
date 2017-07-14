@@ -39,7 +39,7 @@ def main(ctx, config):
 @click.command()
 @click.option("--order-by-volume", help="Order markets by their trading volume", is_flag=True)
 @click.option("--order-by-profit", help="Order markets by their current profit", is_flag=True)
-@click.option("--limit", help="Limit output to NUM markets", default=3)
+@click.option("--limit", help="Limit output to NUM markets", default=10)
 @pass_context
 def explore(ctx, order_by_volume, order_by_profit, limit):
     """List top markets. On default list markets which are profitable and has a high volume."""
