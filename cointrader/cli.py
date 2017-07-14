@@ -5,7 +5,7 @@ import datetime
 import logging
 from cointrader import db, STRATEGIES
 from cointrader.config import Config, get_path_to_config
-from cointrader.exchange import Poloniex
+from cointrader.exchange import Poloniex, ExchangeException
 from cointrader.bot import init_db, get_bot
 from cointrader.helpers import render_bot_statistic, render_bot_tradelog
 
@@ -97,7 +97,13 @@ def start(ctx, market, resolution, start, end, automatic, backtest, papertrade, 
     """Start a new bot on the given market and the given amount of BTC"""
 
     try:
+        # 1. Check if given resolution is valid
+        ctx.exchange.resolution2seconds(resolution)
+        # 2. Check if given market is valid
         market = ctx.exchange.get_market(market, backtest, papertrade)
+    except ExchangeException as ex:
+        click.echo(ex.message)
+        sys.exit(1)
     except ValueError as ex:
         click.echo(ex.message)
         sys.exit(1)
