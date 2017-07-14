@@ -2,7 +2,7 @@
 import datetime
 import logging
 from cointrader.indicators import (
-    WAIT, BUY, SELL, Signal, macdh_momententum
+    WAIT, BUY, SELL, Signal, macdh_momententum, macdh, double_cross
 )
 
 log = logging.getLogger(__name__)
@@ -76,7 +76,7 @@ class Followtrend(Strategy):
         # MACDH as a precondition for trading signals here and required
         # the MACDH signal a change into a bullish/bearish market. This
         # signal stays true as long as the signal changes.
-        macdh_signal = self.macdh(chart)
+        macdh_signal = macdh(chart)
         if macdh_signal.value == BUY:
             self._macd = BUY
         if macdh_signal.value == SELL:
@@ -85,7 +85,7 @@ class Followtrend(Strategy):
 
         # Finally we are using the double_cross signal as confirmation
         # of the former MACDH signal
-        dc_signal = self.double_cross(chart)
+        dc_signal = double_cross(chart)
         if self._macd == BUY and dc_signal.value == BUY:
             signal = dc_signal
         elif self._macd == SELL and dc_signal.value == SELL:
