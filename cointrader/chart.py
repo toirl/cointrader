@@ -29,12 +29,39 @@ def search_chartdata_by_date(data, dt, le=True):
 
 
 class Chart(object):
-    """Docstring for Chart. """
+    """The chart provides a unified interface to the chart data. It also
+    gives access so some common indicators like macd, sma and ema.
+
+    The `data` is provided as list of dictionaries where each
+    dictionary represents a single set of data per point in the
+    chart::
+
+        {
+            u'date': 1500112800,
+            u'open': 0.07132169,
+            u'close': 0.07162004,
+            u'high': 0.07172972,
+            u'low': 0.07114623,
+            u'volume': 7.49372245,
+            u'quoteVolume': 104.69114835,
+            u'weightedAverage': 0.07157933,
+        }
+
+    The `start` and `end` datetimes define the relevant timeframe of
+    the chart for later profit calculations. This date range is
+    needed as the chart itself cointains more more datapoints than
+    within the given date range. This is because we need more data
+    to ensure that indicators like ema and sma provide sensefull
+    values right on from the begin of the timeframe. So there must
+    be more data available before the start.
+    """
 
     def __init__(self, data, start, end):
-        """TODO: to be defined1.
+        """Will build a chart instance from the given raw data input.
 
-        :data: TODO
+        :data: List of datapoints as dictionary.
+        :start: Datetime object.
+        :end: Datetime object.
 
         """
         self._data = data
@@ -62,6 +89,10 @@ class Chart(object):
 
     def values(self, which="close"):
         return [(v["date"], v[which]) for v in self._data]
+
+    ################
+    #  Indicators  #
+    ################
 
     def macdh(self):
         macdh = self._stock.get("macdh")
