@@ -5,6 +5,7 @@ import collections
 import time
 from cointrader.exchanges.poloniex import Poloniex as PoloniexApi
 from cointrader.chart import Chart
+from cointrader.indicators import MIN_POINTS
 
 
 def get_market_name(market):
@@ -57,15 +58,15 @@ class Market(object):
         return "{}{}".format(self._exchange.url, self._name)
 
     def _get_chart_data(self, resolution, start, end):
+        """Will return the data for the chart."""
+        # To ensure that the data cointains enough data to calculate SMA
+        # or EMA right from the start we need to calculate internal
+        # start date of the chart which lies before the given start
+        # date. On default we excpect at least 120 data points in the
+        # chart to be present.
         period = self._exchange.resolution2seconds(resolution)
-        internal_start = start
-        # Calculate internal start date of the chart. The internal start
-        # date is used to ensure that the chart contains enough data to
-        # compute indicators like SMA or EMA. On default we excpect at
-        # least 120 data points in the chart to be present.
-        MIN_POINTS = 120
-        internal_start = internal_start - datetime.timedelta(seconds=period * MIN_POINTS)
-        return self._exchange._api.chart(self._name, internal_start, end, period), int(MIN_POINTS)
+        internal_start = start - datetime.timedelta(seconds=period * MIN_POINTS)
+        return self._exchange._api.chart(self._name, internal_start, end, period)
 
     def get_chart(self, resolution="30m", start=None, end=None):
         """Will return a chart of the market. On default the chart will
@@ -88,7 +89,7 @@ class Market(object):
         if start is None:
             start = datetime.datetime.utcnow()
 
-        data, offset = self._get_chart_data(resolution, start, end)
+        data = self._get_chart_data(resolution, start, end)
         return Chart(data, start, end)
 
     def buy(self, btc, price=None, option=None):
@@ -171,8 +172,8 @@ class BacktestMarket(Market):
 
     def get_chart(self, resolution="30m", start=None, end=None):
         if self._chart_data is None:
-            self._chart_data, offset = self._get_chart_data(resolution, start, end)
-            self._backtest_tick += offset
+            self._chart_data = self._get_chart_data(resolution, start, end)
+            self._backtest_tick += MIN_POINTS
         return Chart(self._chart_data[0:self._backtest_tick], start, end)
 
     def buy(self, btc, price=None):

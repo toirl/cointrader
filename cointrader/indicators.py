@@ -15,6 +15,11 @@ signal_map = {
     SELL: "SELL",
     QUIT: "QUIT"
 }
+
+MIN_POINTS = 120
+# Minimal OFFSET of datapoints needed in a chart to be able to
+# calculate indicatorss like EMA or SMA.
+
 # Signals for strategies.
 
 
