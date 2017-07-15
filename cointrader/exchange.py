@@ -69,15 +69,14 @@ class Market(object):
         return self._exchange._api.chart(self._name, internal_start, end, period)
 
     def get_chart(self, resolution="30m", start=None, end=None):
-        """Will return a chart of the market. On default the chart will
-        have a resolution of 30m. It will include the last recent data
-        of the market on default. You can optionally define a different
-        timeframe by providing a start and end point. On default the
-        start and end of the chart will be the time of requesting the
-        chart data.
+        """Will return a chart of the market.
 
-        The start and end date are used to get the start and end rate of
-        the market for later profit calculations.
+        You can provide a `resolution` of the chart. On default the
+        chart will have a resolution of 30m.
+
+        You can define a different timeframe by providing a `start` and
+        `end` point. On default the the chart will include the last
+        recent data.
 
         :resolution: Resolution of the chart (Default 30m)
         :start: Start of the chart data (Default Now)
