@@ -16,15 +16,9 @@ class Strategy(object):
         return "{}".format(self.__class__)
 
     def __init__(self):
-        self.bot = None
         self.signals = {}
         """Dictionary with details on the signal(s)
         {"indicator": {"signal": 1, "details": Foo}}"""
-        self._chart = None
-        """Current chart"""
-
-    def set_bot(self, bot):
-        self.bot = bot
 
     def signal(self, chart):
         """Will return either a BUY, SELL or WAIT signal for the given

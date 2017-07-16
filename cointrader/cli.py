@@ -131,6 +131,7 @@ def start(ctx, market, resolution, start, end, automatic, backtest, papertrade, 
                                                                    valid_resolutions))
         sys.exit(1)
 
+    # Initialise a strategy.
     strategy = STRATEGIES[strategy]()
 
     bot = get_bot(market, strategy, resolution, start, end, btc, coins)

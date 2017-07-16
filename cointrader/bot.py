@@ -120,7 +120,6 @@ def get_bot(market, strategy, resolution, start, end, btc, amount):
     bot = load_bot(market, strategy, resolution, start, end)
     if bot is None:
         bot = create_bot(market, strategy, resolution, start, end, btc, amount)
-    strategy.set_bot(bot)
     return bot
 
 
