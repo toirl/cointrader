@@ -96,6 +96,16 @@ def balance(ctx):
 def start(ctx, market, resolution, start, end, automatic, backtest, papertrade, strategy, btc, coins):
     """Start a new bot on the given market and the given amount of BTC"""
 
+    # Check start and end date
+    try:
+        if start:
+            start = datetime.datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
+        if end:
+            end = datetime.datetime.strptime(end, "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        click.echo("Date is not valid. Must be in format 'YYYY-mm-dd HH:MM:SS'")
+        sys.exit(1)
+
     # Build the market on which the bot will operate
     # First check if the given market is a valid market. If not exit
     # here with a error message.
@@ -122,11 +132,6 @@ def start(ctx, market, resolution, start, end, automatic, backtest, papertrade, 
         sys.exit(1)
 
     strategy = STRATEGIES[strategy]()
-
-    if start:
-        start = datetime.datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
-    if end:
-        end = datetime.datetime.strptime(end, "%Y-%m-%d %H:%M:%S")
 
     bot = get_bot(market, strategy, resolution, start, end, btc, coins)
     bot.start(backtest, automatic)
