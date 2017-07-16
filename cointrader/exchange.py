@@ -278,16 +278,6 @@ class Exchange(object):
         return sorted(markets.items(),
                       key=lambda x: (float(x[1]["volume"]), float(x[1]["change"])), reverse=True)[0:limit]
 
-    def get_market(self, market, backtest=False, dry_run=False):
-        if self.is_valid_market(market):
-            # Check if market is available
-            if backtest:
-                return BacktestMarket(self, market)
-            else:
-                return Market(self, market, dry_run)
-        else:
-            raise ValueError("Market {} is not available".format(market))
-
     def is_valid_market(self, market):
         return market in self.markets
 
