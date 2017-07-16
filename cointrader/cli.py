@@ -5,7 +5,7 @@ import datetime
 import logging
 from cointrader import db, STRATEGIES
 from cointrader.config import Config, get_path_to_config
-from cointrader.exchange import Market, BacktestMarket, Poloniex, ExchangeException
+from cointrader.exchange import Market, BacktestMarket, Poloniex
 from cointrader.bot import init_db, get_bot
 from cointrader.helpers import render_bot_statistic, render_bot_tradelog
 
@@ -110,11 +110,12 @@ def start(ctx, market, resolution, start, end, automatic, backtest, papertrade, 
         click.echo("Market {} is not available".format(market))
         sys.exit(1)
 
-    try:
-        # 1. Check if given resolution is valid
-        ctx.exchange.resolution2seconds(resolution)
-    except ExchangeException as ex:
-        click.echo(ex.message)
+    # Check if the given resolution is supported
+    if not ctx.exchange.is_valid_resolution(resolution):
+        valid_resolutions = ", ".join(ctx.exchange.resolutions.keys())
+        click.echo("Resolution {} is not supported.\n"
+                   "Please choose one of the following: {}".format(resolution,
+                                                                   valid_resolutions))
         sys.exit(1)
 
     strategy = STRATEGIES[strategy]()

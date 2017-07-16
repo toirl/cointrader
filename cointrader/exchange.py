@@ -281,6 +281,9 @@ class Exchange(object):
     def is_valid_market(self, market):
         return market in self.markets
 
+    def is_valid_resolution(self, resolution):
+        return resolution in self.resolutions
+
     def resolution2seconds(self, resolution):
         try:
             return self.resolutions[resolution]
