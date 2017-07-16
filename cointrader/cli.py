@@ -103,6 +103,9 @@ def start(ctx, market, resolution, start, end, automatic, backtest, papertrade, 
     # instance for backtests depending on the user input.
     if ctx.exchange.is_valid_market(market):
         if backtest:
+            if start is None or end is None:
+                click.echo("Error! For backtests you must provide a timeframe by setting start and end!")
+                sys.exit(1)
             market = BacktestMarket(ctx.exchange, market)
         else:
             market = Market(ctx.exchange, market)
@@ -124,11 +127,6 @@ def start(ctx, market, resolution, start, end, automatic, backtest, papertrade, 
         start = datetime.datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
     if end:
         end = datetime.datetime.strptime(end, "%Y-%m-%d %H:%M:%S")
-
-    if backtest:
-        if start is None or end is None:
-            click.echo("Error! For backtests you must provide a timeframe by setting start and end!")
-            sys.exit(1)
 
     bot = get_bot(market, strategy, resolution, start, end, btc, coins)
     bot.start(backtest, automatic)
