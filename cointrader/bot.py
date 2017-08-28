@@ -216,6 +216,12 @@ class Cointrader(Base):
 
     def _buy(self):
         result = self._market.buy(self.btc)
+        # {u'orderNumber': u'101983568396',
+        #  u'resultingTrades': [{u'tradeID': u'10337029',
+        #                        u'rate': u'0.01459299',
+        #                        u'amount': u'0.01263972',
+        #                        u'date': u'2017-08-28 19:51:50',
+        #                        u'total': u'0.00018445', u'type': u'buy'}]}
         order_id = result["orderNumber"]
         order_type = "BUY"
         total_amount = 0
@@ -238,6 +244,13 @@ class Cointrader(Base):
 
     def _sell(self):
         result = self._market.sell(self.amount)
+        # {u'orderNumber': u'101984509454',
+        #  u'resultingTrades': [{u'tradeID': u'10337105',
+        #                        u'rate': u'0.01458758',
+        #                        u'amount': u'0.01263972',
+        #                        u'date': u'2017-08-28 19:57:51',
+        #                        u'total': u'0.00018438',
+        #                        u'type': u'sell'}]}
         order_id = result["orderNumber"]
         order_type = "SELL"
         total_btc = 0
