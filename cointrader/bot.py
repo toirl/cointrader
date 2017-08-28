@@ -44,42 +44,82 @@ def init_db():
     Base.metadata.create_all(engine)
 
 
-def get_bot(market, strategy, resolution, start, end, btc, amount):
+def load_bot(market, strategy, resolution, start, end):
+    """Will load an existing bot from the database. While loading the
+    bot will replay its trades from the trade log to set the available btc
+    and coins for further trading.
 
+    Beside the btc and amount of coins all other aspects of the coin
+    like the time frame and strategy are defined by the user. They are
+    not loaded from the database."""
     try:
         bot = db.query(Cointrader).filter(Cointrader.market == market._name).one()
         log.info("Loading bot {} {}".format(bot.market, bot.id))
         bot._market = market
-        bot.strategy = str(strategy)
         bot._strategy = strategy
         bot._resolution = resolution
         bot._start = start
         bot._end = end
-        db.commit()
+
+        bot.strategy = str(strategy)
         btc, amount = replay_tradelog(bot.trades)
         log.info("Loaded state from trade log: {} BTC {} COINS".format(btc, amount))
         bot.btc = btc
         bot.amount = amount
+        db.commit()
+        return bot
     except sa.orm.exc.NoResultFound:
-        bot = Cointrader(market, strategy, resolution, start, end)
-        log.info("Creating new bot {}".format(bot.market))
-        if btc is None:
-            balances = market._exchange.get_balance()
-            btc = balances["BTC"]["quantity"]
-        if amount is None:
-            balances = market._exchange.get_balance()
-            amount = balances[market.currency]["quantity"]
-        bot.btc = btc
-        bot.amount = amount
-        chart = market.get_chart(resolution, start, end)
-        rate = chart.get_first_point()["close"]
-        date = datetime.datetime.utcfromtimestamp(chart.get_first_point()["date"])
+        return None
 
-        trade = Trade(date, "INIT", 0, 0, market._name, rate, amount, 0, btc, 0)
-        bot.trades.append(trade)
-        db.add(bot)
+
+def create_bot(market, strategy, resolution, start, end, btc, amount):
+    """Will create a new bot instance."""
+    bot = Cointrader(market, strategy, resolution, start, end)
+    log.info("Creating new bot {}".format(bot.market))
+
+    # Setup the bot with coins and BTC.
+    if btc is None:
+        balances = market._exchange.get_balance()
+        btc = balances["BTC"]["quantity"]
+    if amount is None:
+        balances = market._exchange.get_balance()
+        amount = balances[market.currency]["quantity"]
+    bot.btc = btc
+    bot.amount = amount
+
+    chart = market.get_chart(resolution, start, end)
+    rate = chart.get_first_point()["close"]
+    date = datetime.datetime.utcfromtimestamp(chart.get_first_point()["date"])
+
+    trade = Trade(date, "INIT", 0, 0, market._name, rate, amount, 0, btc, 0)
+    bot.trades.append(trade)
+    db.add(bot)
     db.commit()
-    strategy.set_bot(bot)
+    return bot
+
+
+def get_bot(market, strategy, resolution, start, end, btc, amount):
+    """Will load or create a bot instance.
+    The bot will operate with the given `resolution` on the `market` using
+    the specified `strategy`.
+
+    The `start` and `end`
+    The bot is equipped with a specified `amount` of coins and  `btc` for
+    trading. If no btc or amount is specified (None), the bot will be
+    initialised with *all* available coins on the given market.
+
+    :market: :class:`Market` instance
+    :strategy: :class:`Strategy` instance
+    :resolution: Resolution in seconds the bot will operate on the market.
+    :start: Datetime where the bot will start to operate
+    :end: Datetime where the bot will end to operate
+    :btc: Amount of BTC the Bot will be initialised with
+    :amount: Amount of Coins (eg. Dash, Ripple) the Bot will be initialised with
+    :returns:
+    """
+    bot = load_bot(market, strategy, resolution, start, end)
+    if bot is None:
+        bot = create_bot(market, strategy, resolution, start, end, btc, amount)
     return bot
 
 
@@ -344,18 +384,18 @@ class Cointrader(Base):
                     # btc = click.prompt('BTC', default=self.self.btc)
                     if click.confirm('Buy for {} btc?'.format(self.btc)):
                         signal = Signal(BUY, datetime.datetime.utcnow())
-                if c == 's' and self.amount:
+                elif c == 's' and self.amount:
                     # amount = click.prompt('Amount', default=self.self.amount)
                     if click.confirm('Sell {}?'.format(self.amount)):
                         signal = Signal(SELL, datetime.datetime.utcnow())
-                if c == 'l':
+                elif c == 'l':
                     click.echo(render_bot_tradelog(self.trades))
-                if c == 'p':
+                elif c == 'p':
                     click.echo(render_bot_statistic(self.stat()))
-                if c == 'd':
+                elif c == 'd':
                     automatic = True
                     log.info("Bot detached")
-                if c == 'q':
+                elif c == 'q':
                     log.info("Bot stopped")
                     sys.exit(0)
                 else:

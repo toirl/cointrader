@@ -7,8 +7,16 @@ History
 Overall code refectoring. Moved indicators into its own modul. Cleanup
 strategy code and reworked the interctive mode.
 
+New Features:
+
 * Added option to detach a bot into automatic mode and to reatach a bot into
   intercativ mode.
+
+Other:
+
+* Make bot more robust against wrong user input
+        - Check given market name
+        - Check given resolution
 
 0.4.0 (2017-03-16)
 ------------------

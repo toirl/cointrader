@@ -5,6 +5,7 @@ import collections
 import time
 from cointrader.exchanges.poloniex import Poloniex as PoloniexApi
 from cointrader.chart import Chart
+from cointrader.indicators import MIN_POINTS
 
 
 def get_market_name(market):
@@ -13,6 +14,10 @@ def get_market_name(market):
 
 def add_fee(btc, fee=0.025):
     return btc - (btc / 100 * fee)
+
+
+class ExchangeException(Exception):
+    pass
 
 
 class Coin(object):
@@ -53,26 +58,25 @@ class Market(object):
         return "{}{}".format(self._exchange.url, self._name)
 
     def _get_chart_data(self, resolution, start, end):
+        """Will return the data for the chart."""
+        # To ensure that the data cointains enough data to calculate SMA
+        # or EMA right from the start we need to calculate internal
+        # start date of the chart which lies before the given start
+        # date. On default we excpect at least 120 data points in the
+        # chart to be present.
         period = self._exchange.resolution2seconds(resolution)
-        internal_start = start
-        # Calculate internal start date of the chart. The internal start
-        # date is used to ensure that the chart contains enough data to
-        # compute indicators like SMA or EMA. On default we excpect at
-        # least 120 data points in the chart to be present.
-        MIN_POINTS = 120
-        internal_start = internal_start - datetime.timedelta(seconds=period * MIN_POINTS)
-        return self._exchange._api.chart(self._name, internal_start, end, period), int(MIN_POINTS)
+        internal_start = start - datetime.timedelta(seconds=period * MIN_POINTS)
+        return self._exchange._api.chart(self._name, internal_start, end, period)
 
     def get_chart(self, resolution="30m", start=None, end=None):
-        """Will return a chart of the market. On default the chart will
-        have a resolution of 30m. It will include the last recent data
-        of the market on default. You can optionally define a different
-        timeframe by providing a start and end point. On default the
-        start and end of the chart will be the time of requesting the
-        chart data.
+        """Will return a chart of the market.
 
-        The start and end date are used to get the start and end rate of
-        the market for later profit calculations.
+        You can provide a `resolution` of the chart. On default the
+        chart will have a resolution of 30m.
+
+        You can define a different timeframe by providing a `start` and
+        `end` point. On default the the chart will include the last
+        recent data.
 
         :resolution: Resolution of the chart (Default 30m)
         :start: Start of the chart data (Default Now)
@@ -84,7 +88,7 @@ class Market(object):
         if start is None:
             start = datetime.datetime.utcnow()
 
-        data, offset = self._get_chart_data(resolution, start, end)
+        data = self._get_chart_data(resolution, start, end)
         return Chart(data, start, end)
 
     def buy(self, btc, price=None, option=None):
@@ -167,8 +171,8 @@ class BacktestMarket(Market):
 
     def get_chart(self, resolution="30m", start=None, end=None):
         if self._chart_data is None:
-            self._chart_data, offset = self._get_chart_data(resolution, start, end)
-            self._backtest_tick += offset
+            self._chart_data = self._get_chart_data(resolution, start, end)
+            self._backtest_tick += MIN_POINTS
         return Chart(self._chart_data[0:self._backtest_tick], start, end)
 
     def buy(self, btc, price=None):
@@ -202,9 +206,15 @@ class BacktestMarket(Market):
 class Exchange(object):
 
     """Baseclass for all exchanges"""
-    resolutions = {"5m": 5 * 60, "15m": 15 * 60,
-                   "30m": 30 * 60, "1h": 60 * 60 * 1,
-                   "2h": 60 * 60 * 2, "4h": 60 * 60 * 4, "24h": 60 * 60 * 24}
+
+    # According to Poloniex support the following candlestick period in
+    # seconds; valid values are 300, 900, 1800, 7200, 14400, and 86400.
+    resolutions = {"5m": 300,
+                   "15m": 900,
+                   "30m": 1800,
+                   "2h": 7200,
+                   "4h": 14400,
+                   "24h": 86400}
 
     def __init__(self, config, api=None):
         """TODO: to be defined1. """
@@ -240,8 +250,6 @@ class Exchange(object):
             if currency.startswith("BTC_"):
                 change = round(float(ticker[currency]["percentChange"]) * 100, 2)
                 volume = round(float(ticker[currency]["baseVolume"]), 1)
-                if change <= 0:
-                    continue
                 tmp[currency] = {"volume": volume, "change": change}
         return tmp
 
@@ -270,22 +278,18 @@ class Exchange(object):
         return sorted(markets.items(),
                       key=lambda x: (float(x[1]["volume"]), float(x[1]["change"])), reverse=True)[0:limit]
 
-    def get_market(self, market, backtest=False, dry_run=False):
-        if self.is_valid_market(market):
-            # Check if market is available
-            if backtest:
-                return BacktestMarket(self, market)
-            else:
-                return Market(self, market, dry_run)
-        else:
-            raise ValueError("Market {} is not available".format(market))
-
     def is_valid_market(self, market):
-        ticker = self._api.ticker()
-        return market in ticker.keys()
+        return market in self.markets
+
+    def is_valid_resolution(self, resolution):
+        return resolution in self.resolutions
 
     def resolution2seconds(self, resolution):
-        return self.resolutions[resolution]
+        try:
+            return self.resolutions[resolution]
+        except KeyError:
+            raise ExchangeException("Resolution {} is not supported.\n"
+                                    "Please choose one of the following: {}".format(resolution, ", ".join(self.resolutions.keys())))
 
 
 class Poloniex(Exchange):
