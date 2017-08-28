@@ -22,6 +22,8 @@ def totimestamp(dt):
     # return td.total_seconds()
     return int((td.microseconds + (td.seconds + td.days * 86400) * 10**6) / 10**6)
 
+class ApiError(ValueError):
+    pass
 
 class Api(object):
 
@@ -31,6 +33,9 @@ class Api(object):
         api = config.api
         self.key = api[0]
         self.secret = api[1].encode()
+
+    def _check_response(self, json):
+        raise NotImplementedError()
 
     def ticker(self, currency=None):
         raise NotImplementedError()
@@ -118,6 +123,10 @@ class Poloniex(Api):
     # trading activity within an exchange by extending to firms the
     # incentive to post orders, in theory facilitating trading.
 
+    def _check_response(self, json):
+        if "error" in json:
+            raise ApiError(json["error"])
+
     def ticker(self, currency=None):
         """
         Returns the ticker of the given currency pair. If no pair is given
@@ -138,6 +147,7 @@ class Poloniex(Api):
         params = {"command": "returnTicker"}
         r = requests.get("https://poloniex.com/public", params=params)
         result = json.loads(r.content.decode())
+        self._check_response(result)
         if currency:
             return result[currency]
         return result
@@ -157,6 +167,7 @@ class Poloniex(Api):
         params = {"command": "return24hVolume"}
         r = requests.get("https://poloniex.com/public", params=params)
         result = json.loads(r.content.decode())
+        self._check_response(result)
         if currency:
             pairs = []
             for c in currency:
@@ -181,7 +192,9 @@ class Poloniex(Api):
                   "depth": 10}
 
         r = requests.get("https://poloniex.com/public", params=params)
-        return json.loads(r.content.decode())
+        result = json.loads(r.content.decode())
+        self._check_response(result)
+        return result
 
     def chart(self, currency, start, end, period=1800):
         """
@@ -219,7 +232,9 @@ class Poloniex(Api):
                   "period": period}
 
         r = requests.get("https://poloniex.com/public", params=params)
-        return json.loads(r.content.decode())
+        result = json.loads(r.content.decode())
+        self._check_response(result)
+        return result
 
     def balance(self):
         """
@@ -232,6 +247,7 @@ class Poloniex(Api):
         headers = {"Key": self.key, "Sign": sign}
         r = requests.post("https://poloniex.com/tradingApi", data=params, headers=headers)
         tmp = json.loads(r.content.decode())
+        self._check_response(tmp)
         for currency in tmp:
             result[currency] = {}
             result[currency]["quantity"] = float(tmp[currency]["available"])
@@ -256,6 +272,7 @@ class Poloniex(Api):
         headers = {"Key": self.key, "Sign": sign}
         r = requests.post("https://poloniex.com/tradingApi", data=params, headers=headers)
         result = json.loads(r.content.decode())
+        self._check_response(result)
         return result
 
     def sell(self, market, amount, price, option=None):
@@ -275,4 +292,6 @@ class Poloniex(Api):
         sign = hmac.new(str(self.secret), urlencode(params).encode(), hashlib.sha512).hexdigest()
         headers = {"Key": self.key, "Sign": sign}
         r = requests.post("https://poloniex.com/tradingApi", data=params, headers=headers)
-        return json.loads(r.content.decode())
+        result = json.loads(r.content.decode())
+        self._check_response(result)
+        return result

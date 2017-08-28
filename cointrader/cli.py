@@ -6,6 +6,7 @@ import logging
 from cointrader import db, STRATEGIES
 from cointrader.config import Config, get_path_to_config
 from cointrader.exchange import Poloniex
+from cointrader.exchanges.poloniex import ApiError
 from cointrader.bot import init_db, get_bot
 from cointrader.helpers import render_bot_statistic, render_bot_tradelog
 
@@ -33,7 +34,11 @@ def main(ctx, config):
         config = Config(config)
     else:
         config = Config(open(get_path_to_config(), "r"))
-    ctx.exchange = Poloniex(config)
+    try:
+        ctx.exchange = Poloniex(config)
+    except ApiError as ex:
+        click.echo(ex.message)
+        sys.exit(1)
 
 
 @click.command()
@@ -92,6 +97,9 @@ def start(ctx, market, resolution, start, end, automatic, backtest, papertrade, 
 
     try:
         market = ctx.exchange.get_market(market, backtest, papertrade)
+    except ApiError as ex:
+        click.echo(ex.message)
+        sys.exit(1)
     except ValueError as ex:
         click.echo(ex.message)
         sys.exit(1)
