@@ -20,8 +20,10 @@ def colorize_value(value):
 def render_signal_detail(signal):
     if signal.buy:
         return colored("BUY", "green")
-    else:
+    if signal.sell:
         return colored("SELL", "red")
+    else:
+        return "WAIT"
 
 
 def render_user_options(options):
