@@ -49,7 +49,7 @@ class Klondike(Strategy):
             return signal
         elif signal.sell:
             return signal
-        return Signal(WAIT, chart.date)
+        return Signal(WAIT, datetime.datetime.utcfromtimestamp(chart.date))
 
 
 class Followtrend(Strategy):
