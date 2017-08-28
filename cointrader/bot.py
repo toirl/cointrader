@@ -9,7 +9,7 @@ import sqlalchemy as sa
 import click
 from cointrader import Base, engine, db
 from cointrader.indicators import (
-    WAIT, BUY, SELL, Signal
+    WAIT, BUY, SELL, Signal, signal_map
 )
 from cointrader.helpers import (
     render_bot_statistic, render_bot_tradelog,
@@ -360,8 +360,8 @@ class Cointrader(Base):
         while 1:
             chart = self._market.get_chart(self._resolution, self._start, self._end)
             signal = self._strategy.signal(chart)
-            log.debug("{} {}".format(signal.date, signal.value))
-            interval = self._get_interval(self.automatic, backtest)
+            date = datetime.datetime.utcfromtimestamp(signal.date)
+            log.debug("{} {}".format(date, signal_map[signal.value]))
 
             if not automatic:
                 click.echo(render_bot_title(self, self._market, chart))
