@@ -115,8 +115,8 @@ class Api(object):
 
 class Poloniex(Api):
 
-    MAKER_FEE = 0.15
-    TAKER_FEE = 0.25
+    MAKER_FEE = 0
+    TAKER_FEE = 0
     # So-called maker-taker fees offer a transaction rebate to those who
     # provide liquidity (the market maker), while charging customers who
     # take that liquidity. The chief aim of maker-taker fees is to stimulate
