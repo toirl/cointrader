@@ -11,6 +11,7 @@ from cointrader import Base, engine, db
 from cointrader.indicators import (
     WAIT, BUY, SELL, Signal, signal_map
 )
+from cointrader.exchanges.poloniex import ApiError
 from cointrader.helpers import (
     render_bot_statistic, render_bot_tradelog,
     render_bot_title, render_signal_detail,
@@ -424,7 +425,10 @@ class Cointrader(Base):
                         automatic = False
 
             if signal:
-                self._handle_signal(signal)
+                try:
+                    self._handle_signal(signal)
+                except ApiError as ex:
+                    log.error("Can not place order: {}".format(ex.message))
 
             if backtest:
                 if not self._market.continue_backtest():
