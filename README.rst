@@ -35,19 +35,20 @@ have come with your installation or git clone.
         accept any responsibility for any losses.
 
         Cointrader is Alpha quality! It is not meant to be used for serious
-        trading yet. It is still in a early development phase and has a bunch
-        full of known defects. Expect all all aspects of the application to
+        trading yet. It is still in an early development phase and has a bunch
+        full of known defects. Expect all aspects of the application to
         change in the future. Cointrader is not roundly tested.
 
-        If you want to help cointrader the best Free Software trading bot your
-        contribution is highly appreciated! Find details on how to participate
-        in the `documentation <http://cointrader.readthedocs.io/en/latest/contributing.html>`_.
+        If you want to help cointrader to become the best Free Software
+        trading bot your contribution is highly appreciated! Find details on
+        how to participate in the
+        `documentation <https://cointrader.readthedocs.io/en/latest/contributing.html>`_.
 
 
 * Status: **Alpha**
 * Free software: MIT license
 * Source: https://github.com/toirl/cointrader
-* Documentation: https://cointrader.readthedocs.io.
+* Documentation: https://cointrader.readthedocs.io
 
 If you like the program, I am looking forward to a donation :)
 
@@ -65,8 +66,8 @@ Features
 * Trade logbook
 * Profit/Loss analysis (Bot vs. Market)
 * Backtesting. Check how good your strategy performs on historic charts.
-* Explore exchanges and find interesting markets to trade on
-* Show your balances
+* Explore exchanges and find interesting markets to trade on.
+* Show your balances.
 
 Planned
 -------
