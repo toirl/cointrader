@@ -21,9 +21,13 @@ Cointrader
      :alt: Updates
 
 
-Cointrader is Python based CLI trading application for crypto currencies on
-the Poloniex_ exchange.  Cointrader can be used for semiautomatic guided
-trading.
+Cointrader is a CLI trading application for crypto currencies on
+the Poloniex_ exchange written in the Python programming language.
+Cointrader can be used for semiautomatic guided trading.
+
+It is released under the MIT License and Copyright 2017 by Torsten Irländer.
+The license text ist distributed in full text in the LICENSE file that should
+have come with your installation or git clone.
 
 .. danger::
 
