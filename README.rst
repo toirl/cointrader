@@ -20,6 +20,8 @@ Cointrader
      :target: https://pyup.io/repos/github/toirl/cointrader/
      :alt: Updates
 
+**Cointraider development has stopped!** If you are interested in continuing 
+the development please write me an email.
 
 Cointrader is a CLI trading application for crypto currencies on
 the Poloniex_ exchange written in the Python programming language.
